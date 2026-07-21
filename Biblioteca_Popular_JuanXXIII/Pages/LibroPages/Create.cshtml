@@ -1,0 +1,82 @@
+@page
+@model Biblioteca_Popular_JuanXXIII.Pages.LibroPages.CreateModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>Libro</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <span class="text-danger">*</span>
+                <label asp-for="Libro.CodigoInventario" class="control-label"></label>
+                <input asp-for="Libro.CodigoInventario" class="form-control" aria-required="true"/>
+                <span asp-validation-for="Libro.CodigoInventario" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <span class="text-danger">*</span>
+                <label asp-for="Libro.Titulo" class="control-label"></label>
+                <input asp-for="Libro.Titulo" class="form-control" aria-required="true"/>
+                <span asp-validation-for="Libro.Titulo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <span class="text-danger">*</span>
+                <label asp-for="Libro.Autor" class="control-label"></label>
+                <input asp-for="Libro.Autor" class="form-control" aria-required="true"/>
+                <span asp-validation-for="Libro.Autor" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Libro.Editorial" class="control-label"></label>
+                <input asp-for="Libro.Editorial" class="form-control" />
+                <span asp-validation-for="Libro.Editorial" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Libro.AnioPublicacion" class="control-label"></label>
+                <input asp-for="Libro.AnioPublicacion" class="form-control" />
+                <span asp-validation-for="Libro.AnioPublicacion" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Libro.ISBN" class="control-label"></label>
+                <input asp-for="Libro.ISBN" class="form-control" />
+                <span asp-validation-for="Libro.ISBN" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Libro.SignaturaDewey" class="control-label"></label>
+                <input asp-for="Libro.SignaturaDewey" class="form-control" />
+                <span asp-validation-for="Libro.SignaturaDewey" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Libro.TipoMaterial" class="control-label"></label>
+                <input asp-for="Libro.TipoMaterial" class="form-control" />
+                <span asp-validation-for="Libro.TipoMaterial" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Libro.Sinopsis" class="control-label"></label>
+                <input asp-for="Libro.Sinopsis" class="form-control" />
+                <span asp-validation-for="Libro.Sinopsis" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Libro.Disponible" class="control-label"></label>
+                <input asp-for="Libro.Disponible" class="form-check-input" />
+                <span asp-validation-for="Libro.Disponible" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="./Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

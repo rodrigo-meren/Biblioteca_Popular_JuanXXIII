@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using BibliotecaWeb.Models;
+using Biblioteca_Popular_JuanXXIII.Models;
 
-namespace BibliotecaWeb.Data
+namespace Biblioteca_Popular_JuanXXIII.Data
 {
     public class ApplicationDbContext : DbContext
     {

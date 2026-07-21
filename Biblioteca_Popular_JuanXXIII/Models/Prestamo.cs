@@ -1,8 +1,9 @@
 ﻿using System;
+using Biblioteca_Popular_JuanXXIII.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BibliotecaWeb.Models
+namespace Biblioteca_Popular_JuanXXIII      
 {
     public class Prestamo
     {

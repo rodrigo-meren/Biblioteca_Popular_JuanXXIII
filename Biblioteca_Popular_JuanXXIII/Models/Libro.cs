@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BibliotecaWeb.Models
+namespace Biblioteca_Popular_JuanXXIII.Models
 {
     public class Libro
     {

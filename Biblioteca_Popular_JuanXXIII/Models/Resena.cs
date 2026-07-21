@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace BibliotecaWeb.Models
+namespace Biblioteca_Popular_JuanXXIII.Models
 {
     public class Resena
     {
