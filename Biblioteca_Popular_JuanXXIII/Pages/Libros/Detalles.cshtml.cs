@@ -4,18 +4,16 @@ using Microsoft.EntityFrameworkCore;
 using Biblioteca_Popular_JuanXXIII.Models;
 using Biblioteca_Popular_JuanXXIII.Data;
 
-namespace Biblioteca_Popular_JuanXXIII.Pages.LibroPages;
+namespace Biblioteca_Popular_JuanXXIII.Pages.Libros;
 
-public class DeleteModel : PageModel
+public class DetallesModel : PageModel
 {
     private readonly ApplicationDbContext _context;
-
-    public DeleteModel(ApplicationDbContext context)
+    public DetallesModel(ApplicationDbContext context)
     {
         _context = context;
     }
 
-    [BindProperty]
     public Libro Libro { get; set; } = default!;
 
     public async Task<IActionResult> OnGetAsync(int? id)
@@ -36,23 +34,5 @@ public class DeleteModel : PageModel
         }
 
         return Page();
-    }
-
-    public async Task<IActionResult> OnPostAsync(int? id)
-    {
-        if (id is null)
-        {
-            return NotFound();
-        }
-
-        var libro = await _context.Libros.FindAsync(id);
-        if (libro != null)
-        {
-            Libro = libro;
-            _context.Libros.Remove(Libro);
-            await _context.SaveChangesAsync();
-        }
-
-        return RedirectToPage("./Index");
     }
 }

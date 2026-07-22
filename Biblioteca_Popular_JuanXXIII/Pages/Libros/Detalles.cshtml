@@ -1,11 +1,11 @@
 @page
-@model Biblioteca_Popular_JuanXXIII.Pages.LibroPages.DetailsModel
+@model Biblioteca_Popular_JuanXXIII.Pages.Libros.DetallesModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Detalles";
 }
 
-<h1>Details</h1>
+<h1>Detalles</h1>
 
 <div>
     <h4>Libro</h4>
@@ -48,16 +48,16 @@
             @Html.DisplayFor(model => model.Libro.ISBN)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.SignaturaDewey)
+            @Html.DisplayNameFor(model => model.Libro.UbicacionFisica)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.SignaturaDewey)
+            @Html.DisplayFor(model => model.Libro.UbicacionFisica)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.TipoMaterial)
+            @Html.DisplayNameFor(model => model.Libro.UrlPortada)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.TipoMaterial)
+            @Html.DisplayFor(model => model.Libro.UrlPortada)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Libro.Sinopsis)

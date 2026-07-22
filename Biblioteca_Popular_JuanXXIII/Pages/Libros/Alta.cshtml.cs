@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Biblioteca_Popular_JuanXXIII.Models;
 using Biblioteca_Popular_JuanXXIII.Data;
 
-namespace Biblioteca_Popular_JuanXXIII.Pages.LibroPages;
+namespace Biblioteca_Popular_JuanXXIII.Pages.Libros;
 
-public class CreateModel : PageModel
+public class AltaModel : PageModel
 {
     private readonly ApplicationDbContext _context;
 
-    public CreateModel(ApplicationDbContext context)
+    public AltaModel(ApplicationDbContext context)
     {
         _context = context;
     }
@@ -34,6 +34,6 @@ public class CreateModel : PageModel
         _context.Libros.Add(Libro);
         await _context.SaveChangesAsync();
 
-        return RedirectToPage("./Index");
+        return RedirectToPage("./Inicio");
     }
 }

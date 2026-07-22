@@ -26,14 +26,14 @@ namespace Biblioteca_Popular_JuanXXIII.Models
 
         // ¡Acá está la magia! El ? indica que permite NULL (para libros viejos)
         [StringLength(50)]
-        public string? ISBN { get; set; }
-
-        [StringLength(50)]
-        public string? SignaturaDewey { get; set; } // La ubicación en la estantería
+        public string? ISBN { get; set; }        
 
         [StringLength(100)]
-        public string? TipoMaterial { get; set; } // Ej: Libro, Revista, Mapa
+        public string? UrlPortada { get; set; }
+        [StringLength(50)]
+        public string? UbicacionFisica { get; set; }
         public string? Sinopsis { get; set; }
+        public string? GeneroLiterario { get; set; }
 
         // Propiedad booleana súper útil para saber rápido si está en la biblioteca o prestado
         public bool Disponible { get; set; } = true;

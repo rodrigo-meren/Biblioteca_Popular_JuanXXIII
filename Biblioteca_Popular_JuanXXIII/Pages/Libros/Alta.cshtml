@@ -1,0 +1,128 @@
+@page
+@model Biblioteca_Popular_JuanXXIII.Pages.Libros.AltaModel
+@{
+    ViewData["Title"] = "Nuevo Libro";
+}
+
+<h2>Dar de alta un nuevo libro</h2>
+<hr />
+
+<form method="post">
+    <div class="row">
+        <!-- Columna Izquierda -->
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label asp-for="Libro.ISBN" class="control-label fw-bold">ISBN</label>
+                <div class="input-group">
+                    <input asp-for="Libro.ISBN" id="inputIsbn" class="form-control" placeholder="Opcional. Ej: 9789875666472" />
+                    <button type="button" id="btnBuscarIsbn" class="btn btn-outline-info">Autocompletar</button>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.CodigoInventario" class="control-label fw-bold">Código de Inventario *</label>
+                <input asp-for="Libro.CodigoInventario" class="form-control" />
+                <span asp-validation-for="Libro.CodigoInventario" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.Titulo" class="control-label fw-bold">Título *</label>
+                <input asp-for="Libro.Titulo" id="inputTitulo" class="form-control" />
+                <span asp-validation-for="Libro.Titulo" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.Autor" class="control-label fw-bold">Autor *</label>
+                <input asp-for="Libro.Autor" id="inputAutor" class="form-control" />
+                <span asp-validation-for="Libro.Autor" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- En la columna derecha de tu Alta.cshtml -->
+<div class="form-group mb-3">
+    <label asp-for="Libro.Editorial" class="control-label fw-bold">Editorial</label>
+    <input asp-for="Libro.Editorial" id="inputEditorial" class="form-control" />
+</div>
+
+<div class="row">
+    <div class="col-6 form-group mb-3">
+        <label asp-for="Libro.AnioPublicacion" class="control-label fw-bold">Año</label>
+        <input asp-for="Libro.AnioPublicacion" id="inputAnio" class="form-control" />
+    </div>
+    <!-- Acá agregamos el campo nuevo de Género -->
+    <div class="col-6 form-group mb-3">
+        <label asp-for="Libro.GeneroLiterario" class="control-label fw-bold">Género</label>
+        <input asp-for="Libro.GeneroLiterario" id="inputGenero" class="form-control" />
+    </div>
+</div>
+
+<div class="form-group mb-3">
+    <label asp-for="Libro.Sinopsis" class="control-label fw-bold">Sinopsis</label>
+    <textarea asp-for="Libro.Sinopsis" id="inputSinopsis" class="form-control" rows="4"></textarea>
+</div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Guardar Libro</button>
+        <a asp-page="Index" class="btn btn-outline-secondary ms-2">Volver a la lista</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.getElementById('btnBuscarIsbn').addEventListener('click', async function () {
+            const isbn = document.getElementById('inputIsbn').value.trim();
+            
+            if (!isbn) { 
+                alert('Ingresá un ISBN primero'); 
+                return; 
+            }
+            
+            const btn = this; 
+            btn.innerHTML = 'Buscando...'; 
+            btn.disabled = true;
+            
+            // Reemplazá este texto por tu clave real
+            const apiKey = 'AIzaSyCeel9dCx0FA-VNewgi2ojNXNqtinW_pYo'; 
+
+           try {
+                const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${apiKey}`);
+                const data = await response.json();
+                
+                if (data.totalItems > 0) {
+                    const libro = data.items[0].volumeInfo;
+                    
+                    // Título y Autor (lo que ya tenías)
+                    document.getElementById('inputTitulo').value = libro.title || '';
+                    document.getElementById('inputAutor').value = libro.authors ? libro.authors.join(', ') : '';
+                    
+                    // LOS DATOS NUEVOS
+                    // Editorial
+                    document.getElementById('inputEditorial').value = libro.publisher || '';
+                    
+                    // Año (Recortamos a 4 caracteres para extraer solo el año "YYYY")
+                    document.getElementById('inputAnio').value = libro.publishedDate ? libro.publishedDate.substring(0, 4) : '';
+                    
+                    // Sinopsis
+                    document.getElementById('inputSinopsis').value = libro.description || '';
+                    
+                    // Género Literario (Google lo llama 'categories' y viene en un array)
+                    document.getElementById('inputGenero').value = libro.categories ? libro.categories.join(', ') : '';
+
+                } else { 
+                    alert('No se encontró información para este ISBN en Google Books.'); 
+                }
+            } catch (error) { 
+                console.error(error); 
+                alert('Error de conexión con la API de Google.'); 
+            } finally { 
+                btn.innerHTML = 'Autocompletar'; 
+                btn.disabled = false; 
+            }
+        });
+    </script>
+}
+}
