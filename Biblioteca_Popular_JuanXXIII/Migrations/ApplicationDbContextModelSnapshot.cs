@@ -162,6 +162,9 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Apellido")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -203,6 +206,9 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Pronombre")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Telefono")
                         .HasMaxLength(50)

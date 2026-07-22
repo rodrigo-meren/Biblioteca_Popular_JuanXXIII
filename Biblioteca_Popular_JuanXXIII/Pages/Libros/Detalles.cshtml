@@ -1,79 +1,142 @@
 @page
 @model Biblioteca_Popular_JuanXXIII.Pages.Libros.DetallesModel
-
 @{
-    ViewData["Title"] = "Detalles";
+    ViewData["Title"] = "Detalles del Libro";
+
+    // Pequeña función en C# para traducir los géneros más comunes de Google Books
+    string TraducirGenero(string generoIngles)
+    {
+        if (string.IsNullOrEmpty(generoIngles)) return "No especificado";
+
+        var traducciones = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Fiction", "Ficción" },
+            { "Juvenile Fiction", "Ficción Juvenil" },
+            { "History", "Historia" },
+            { "Biography & Autobiography", "Biografía y Autobiografía" },
+            { "Science", "Ciencia" },
+            { "Fantasy", "Fantasía" },
+            { "Romance", "Romance" },
+            { "Mystery", "Misterio" },
+            { "Thriller", "Suspenso" },
+            { "Poetry", "Poesía" },
+            { "Philosophy", "Filosofía" },
+            { "Social Science", "Ciencias Sociales" },
+            { "Humor", "Humor" },
+            { "Art", "Arte" },
+            { "Self-Help", "Autoayuda" },
+            { "Cooking", "Cocina" }
+        };
+
+        // Separamos por comas en caso de que vengan varios (ej: "Fiction, History")
+        var generos = generoIngles.Split(',').Select(g => g.Trim());
+        var generosTraducidos = generos.Select(g => traducciones.ContainsKey(g) ? traducciones[g] : g);
+
+        return string.Join(", ", generosTraducidos);
+    }
 }
 
-<h1>Detalles</h1>
-
-<div>
-    <h4>Libro</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.CodigoInventario)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.CodigoInventario)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.Titulo)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.Titulo)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.Autor)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.Autor)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.Editorial)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.Editorial)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.AnioPublicacion)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.AnioPublicacion)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.ISBN)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.ISBN)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.UbicacionFisica)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.UbicacionFisica)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.UrlPortada)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.UrlPortada)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.Sinopsis)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.Sinopsis)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Libro.Disponible)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Libro.Disponible)
-        </dd>
-    </dl>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="text-institucional-rojo">Detalles del Libro</h1>
 </div>
-<div>
-    <a asp-page="./Edit" asp-route-id="@Model.Libro.Id">Edit</a> |
-    <a asp-page="./Index">Back to List</a>
+
+<div class="card shadow-sm border-0">
+    <div class="row g-0">
+        <!-- Columna de la Portada (Izquierda) -->
+        <div class="col-md-3 bg-light p-4 border-end d-flex align-items-center justify-content-center text-center">
+            @if (!string.IsNullOrEmpty(Model.Libro.ISBN))
+            {
+                <!-- Usamos la API de Open Library con el ISBN para cargar la tapa mágicamente -->
+                <img src="https://covers.openlibrary.org/b/isbn/@(Model.Libro.ISBN)-L.jpg"
+                     class="img-fluid rounded shadow-sm"
+                     alt="Portada de @Model.Libro.Titulo"
+                     onerror="this.src='/img/portada-default.png';"
+                     style="max-height: 350px; object-fit: cover;" />
+            }
+            else
+            {
+                <div class="text-muted p-4">
+                    <i class="bi bi-book text-secondary" style="font-size: 4rem;"></i>
+                    <p class="mt-2">Sin portada disponible</p>
+                </div>
+            }
+        </div>
+
+        <!-- Columna de la Información (Derecha) -->
+        <div class="col-md-9">
+            <div class="card-body p-4">
+                <h2 class="card-title fw-bold text-dark">@Model.Libro.Titulo</h2>
+                <h4 class="text-muted mb-4">@Model.Libro.Autor</h4>
+
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold text-secondary">Código Inventario:</div>
+                    <div class="col-sm-9">@Model.Libro.CodigoInventario</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold text-secondary">ISBN:</div>
+                    <div class="col-sm-9">@(Model.Libro.ISBN ?? "N/A")</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold text-secondary">Editorial y Año:</div>
+                    <div class="col-sm-9">@(Model.Libro.Editorial ?? "N/A") - @(Model.Libro.AnioPublicacion?.ToString() ?? "N/A")</div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold text-secondary">Género:</div>
+                    <div class="col-sm-9">
+                        <span class="badge bg-info text-dark fs-6">@TraducirGenero(Model.Libro.GeneroLiterario)</span>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Libro.Sinopsis))
+                {
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold text-secondary">Sinopsis:</div>
+                        <div class="col-sm-9 text-justify" style="text-align: justify;">
+                            @Model.Libro.Sinopsis
+                        </div>
+                    </div>
+                }
+
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold text-secondary">Estado:</div>
+                    <div class="col-sm-9">
+                        @if (Model.Libro.Disponible)
+                        {
+                            <span class="badge bg-success fs-6"><i class="bi bi-check-circle"></i> Disponible</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark fs-6"><i class="bi bi-x-circle"></i> Prestado</span>
+                        }
+                    </div>
+                </div>
+
+               
+                @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                {
+                    <div class="row mt-4 mb-2 bg-warning bg-opacity-10 p-3 rounded border border-warning">
+                        <div class="col-sm-3 fw-bold text-dark">
+                            <i class="bi bi-geo-alt-fill text-danger"></i> Ubicación Física:
+                        </div>
+                        <div class="col-sm-9 fw-bold text-dark">
+                            @(Model.Libro.UbicacionFisica ?? "No asignada")
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Botones actualizados y alineados a la derecha -->
+            <div class="card-footer bg-white border-0 text-end p-4">
+                @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                {
+                    <a asp-page="./Editar" asp-route-id="@Model.Libro.Id" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Editar Datos</a>
+                }
+                
+                <a asp-page="./Inicio" class="btn btn-outline-secondary ms-2"><i class="bi bi-arrow-left"></i> Volver al Catálogo</a>
+            </div>
+        </div>
+    </div>
 </div>

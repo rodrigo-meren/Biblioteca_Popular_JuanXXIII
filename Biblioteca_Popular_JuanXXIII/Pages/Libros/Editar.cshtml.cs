@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Biblioteca_Popular_JuanXXIII.Models;
 using Biblioteca_Popular_JuanXXIII.Data;
 
-namespace Biblioteca_Popular_JuanXXIII.Pages.LibroPages;
+namespace Biblioteca_Popular_JuanXXIII.Pages.Libros;
 
-public class EditModel : PageModel
+public class EditarModel : PageModel
 {
     private readonly ApplicationDbContext _context;
 
-    public EditModel(ApplicationDbContext context)
+    public EditarModel(ApplicationDbContext context)
     {
         _context = context;
     }

@@ -1,83 +1,158 @@
 @page
-@model Biblioteca_Popular_JuanXXIII.Pages.LibroPages.EditModel
-
+@model Biblioteca_Popular_JuanXXIII.Pages.Libros.EditarModel
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Libro";
 }
 
-<h1>Edit</h1>
-
-<h4>Libro</h4>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-institucional-rojo">Editar: @Model.Libro.Titulo</h2>
+</div>
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Libro.Id" />
-            <div class="form-group">
-                <span class="text-danger">*</span>
-                <label asp-for="Libro.CodigoInventario" class="control-label"></label>
-                <input asp-for="Libro.CodigoInventario" class="form-control" aria-required="true"/>
+
+<form method="post">
+    <!-- EL CAMPO OCULTO VITAL PARA QUE ENTITY FRAMEWORK SEPA QUÉ ACTUALIZAR -->
+    <input type="hidden" asp-for="Libro.Id" />
+
+    <div class="row">
+        <!-- Columna Izquierda -->
+        <div class="col-md-6">
+
+            <!-- Previsualización de la portada actual -->
+            <div class="mb-4 text-center bg-light p-3 rounded border">
+                <img id="imgPortadaPreview"
+                     src="@(string.IsNullOrEmpty(Model.Libro.ISBN) ? "/img/portada-default.png" : $"https://covers.openlibrary.org/b/isbn/{Model.Libro.ISBN}-M.jpg")"
+                     alt="Portada"
+                     class="img-fluid rounded shadow-sm"
+                     onerror="this.src='/img/portada-default.png';"
+                     style="max-height: 200px; object-fit: cover;" />
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.ISBN" class="control-label fw-bold">ISBN</label>
+                <div class="input-group">
+                    <input asp-for="Libro.ISBN" id="inputIsbn" class="form-control" placeholder="Ej: 9789875666472" />
+                    <button type="button" id="btnBuscarIsbn" class="btn btn-outline-info">Actualizar datos de Google</button>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.CodigoInventario" class="control-label fw-bold">Código de Inventario *</label>
+                <input asp-for="Libro.CodigoInventario" class="form-control" />
                 <span asp-validation-for="Libro.CodigoInventario" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <span class="text-danger">*</span>
-                <label asp-for="Libro.Titulo" class="control-label"></label>
-                <input asp-for="Libro.Titulo" class="form-control" aria-required="true"/>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.Titulo" class="control-label fw-bold">Título *</label>
+                <input asp-for="Libro.Titulo" id="inputTitulo" class="form-control" />
                 <span asp-validation-for="Libro.Titulo" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <span class="text-danger">*</span>
-                <label asp-for="Libro.Autor" class="control-label"></label>
-                <input asp-for="Libro.Autor" class="form-control" aria-required="true"/>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.Autor" class="control-label fw-bold">Autor *</label>
+                <input asp-for="Libro.Autor" id="inputAutor" class="form-control" />
                 <span asp-validation-for="Libro.Autor" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Libro.Editorial" class="control-label"></label>
-                <input asp-for="Libro.Editorial" class="form-control" />
-                <span asp-validation-for="Libro.Editorial" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Libro.AnioPublicacion" class="control-label"></label>
-                <input asp-for="Libro.AnioPublicacion" class="form-control" />
-                <span asp-validation-for="Libro.AnioPublicacion" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Libro.ISBN" class="control-label"></label>
-                <input asp-for="Libro.ISBN" class="form-control" />
-                <span asp-validation-for="Libro.ISBN" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Libro.UbicacionFisica" class="control-label"></label>
-                <input asp-for="Libro.UbicacionFisica" class="form-control" />
-                <span asp-validation-for="Libro.UbicacionFisica" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Libro.UrlPortada" class="control-label"></label>
-                <input asp-for="Libro.UrlPortada" class="form-control" />
-                <span asp-validation-for="Libro.UrlPortada" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Libro.Sinopsis" class="control-label"></label>
-                <input asp-for="Libro.Sinopsis" class="form-control" />
-                <span asp-validation-for="Libro.Sinopsis" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Libro.Disponible" class="control-label"></label>
-                <input asp-for="Libro.Disponible" class="form-check-input" />
-                <span asp-validation-for="Libro.Disponible" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
-</div>
+        </div>
 
-<div>
-    <a asp-page="./Index">Back to List</a>
-</div>
+        <!-- Columna Derecha -->
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label asp-for="Libro.Editorial" class="control-label fw-bold">Editorial</label>
+                <input asp-for="Libro.Editorial" id="inputEditorial" class="form-control" />
+            </div>
+
+            <div class="row">
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Libro.AnioPublicacion" class="control-label fw-bold">Año</label>
+                    <input asp-for="Libro.AnioPublicacion" id="inputAnio" class="form-control" />
+                </div>
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Libro.GeneroLiterario" class="control-label fw-bold">Género</label>
+                    <input asp-for="Libro.GeneroLiterario" id="inputGenero" class="form-control" />
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Libro.Sinopsis" class="control-label fw-bold">Sinopsis</label>
+                <textarea asp-for="Libro.Sinopsis" id="inputSinopsis" class="form-control" rows="5"></textarea>
+            </div>
+
+            <!-- Ubicación de Biblioteca -->
+            <div class="form-group mb-3">
+                <label asp-for="Libro.UbicacionFisica" class="control-label fw-bold">Clasificación (Dewey)</label>
+                <input asp-for="Libro.UbicacionFisica" class="form-control" />
+            </div>
+
+            <!-- CAMPO PRIVADO: Ubicación Física Oculta (Solo Administradores) -->
+            @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+            {
+                <div class="form-group mt-4 mb-3 bg-warning bg-opacity-10 p-3 rounded border border-warning">
+                    <label asp-for="Libro.UbicacionFisica" class="control-label fw-bold text-dark">
+                        <i class="bi bi-geo-alt-fill text-danger"></i> Ubicación Física (Solo Admin)
+                    </label>
+                    <input asp-for="Libro.UbicacionFisica" class="form-control border-warning" />
+                </div>
+            }
+
+            <div class="form-check mb-4 mt-3 bg-light p-2 rounded border">
+                <input class="form-check-input ms-1" asp-for="Libro.Disponible" />
+                <label class="form-check-label ms-2 fw-bold" asp-for="Libro.Disponible">
+                    ¿Está disponible en biblioteca para préstamo?
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 border-top pt-3 text-end">
+        <a asp-page="./Inicio" class="btn btn-outline-secondary me-2">Cancelar</a>
+        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save"></i> Guardar Cambios</button>
+    </div>
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.getElementById('btnBuscarIsbn').addEventListener('click', async function() {
+            const isbn = document.getElementById('inputIsbn').value.trim();
+            if (!isbn) { alert('Ingresá un ISBN primero'); return; }
+
+            const btn = this;
+            btn.innerHTML = 'Buscando...';
+            btn.disabled = true;
+
+            const apiKey = 'AIzaSyCeel9dCx0FA-VNewgi2ojNXNqtinW_pYo'
+
+            try {
+                const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${apiKey}`);
+                const data = await response.json();
+
+                if (data.totalItems > 0) {
+                    const libro = data.items[0].volumeInfo;
+
+                    document.getElementById('inputTitulo').value = libro.title || '';
+                    document.getElementById('inputAutor').value = libro.authors ? libro.authors.join(', ') : '';
+                    document.getElementById('inputEditorial').value = libro.publisher || '';
+                    document.getElementById('inputAnio').value = libro.publishedDate ? libro.publishedDate.substring(0, 4) : '';
+                    document.getElementById('inputSinopsis').value = libro.description || '';
+                    document.getElementById('inputGenero').value = libro.categories ? libro.categories.join(', ') : '';
+
+                    const imgPreview = document.getElementById('imgPortadaPreview');
+                    if (libro.imageLinks && libro.imageLinks.thumbnail) {
+                        imgPreview.src = libro.imageLinks.thumbnail.replace('http:', 'https:');
+                    }
+                } else {
+                    alert('No se encontró información para este ISBN en Google Books.');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error de conexión con la API de Google.');
+            } finally {
+                btn.innerHTML = 'Actualizar datos de Google';
+                btn.disabled = false;
+            }
+        });
+    </script>
 }

@@ -1,0 +1,115 @@
+@page
+@model Biblioteca_Popular_JuanXXIII.Pages.Socies.InicioModel
+@{
+    ViewData["Title"] = "Padrón de Socies";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="text-institucional-rojo"><i class="bi bi-people-fill me-2"></i>Padrón de Socies</h1>
+    <a asp-page="Alta" class="btn btn-primary shadow-sm">
+        <i class="bi bi-person-plus-fill me-1"></i> Nuevx Socie
+    </a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover table-striped align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">DNI / Carnet</th>
+                    <th>Socie</th>
+                    <th>Categoría</th>
+                    <th>Estado Cuota</th> <!-- Columna Nueva -->
+                    <th>Activo</th>
+                    <th class="text-end pe-4">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Socio)
+                {
+
+                    // LÓGICA DEL SEMÁFORO DEL EXCEL PARA LA CUOTA
+                    string claseColorCuota = "bg-secondary";
+                    string textoCuota = "Sin registrar";
+                    string fechaTexto = "";
+
+                    if (item.FechaVencimiento.HasValue)
+                    {
+                        // Calculamos cuántos días pasaron desde el vencimiento hasta hoy
+                        var diasVencidos = (DateTime.Today - item.FechaVencimiento.Value.Date).TotalDays;
+                        fechaTexto = item.FechaVencimiento.Value.ToString("dd/MM/yy");
+
+                        if (diasVencidos <= 0)
+                        {
+                            // No venció o vence hoy (Verde)
+                            claseColorCuota = "bg-success";
+                            textoCuota = "Al día";
+                        }
+                        else if (diasVencidos <= 10)
+                        {
+                            // Venció hace 10 días o menos (Amarillo)
+                            claseColorCuota = "bg-warning text-dark";
+                            textoCuota = "Alerta";
+                        }
+                        else
+                        {
+                            // Pasaron más de 10 días (Rojo)
+                            claseColorCuota = "bg-danger";
+                            textoCuota = "Deuda";
+                        }
+                    }
+
+                    <tr>
+                        <td class="ps-4 fw-bold text-secondary">@item.DniCarnet</td>
+                        <td>
+                            <span class="fw-bold">@item.Apellido, @item.Nombre</span>
+                            @if (!string.IsNullOrEmpty(item.Pronombre))
+                            {
+                                <span class="badge bg-light text-secondary border ms-1" style="font-size: 0.75rem;">@item.Pronombre</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge border border-info text-info fs-7">@item.Categoria</span>
+                        </td>
+
+                        <!-- LA COLUMNA DE LA CUOTA CON EL SEMÁFORO -->
+                        <td>
+                            <span class="badge @claseColorCuota shadow-sm" title="Vencimiento: @fechaTexto">
+                                @textoCuota
+                            </span>
+                            @if (item.FechaVencimiento.HasValue)
+                            {
+                                <small class="d-block text-muted" style="font-size: 0.70rem;">Vence: @fechaTexto</small>
+                            }
+                        </td>
+
+                        <td>
+                            @if (item.Activo)
+                            {
+                                <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Sí</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>No</span>
+                            }
+                        </td>
+                        <td class="text-end pe-4">
+                            <a asp-page="./Detalles" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white" title="Ver detalles">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a asp-page="./Editar" asp-route-id="@item.Id" class="btn btn-sm btn-secondary" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="post" asp-page-handler="Eliminar" asp-route-id="@item.Id" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('¿Estás segure de que querés borrar a este socie? Esta acción no se puede deshacer.');" title="Borrar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

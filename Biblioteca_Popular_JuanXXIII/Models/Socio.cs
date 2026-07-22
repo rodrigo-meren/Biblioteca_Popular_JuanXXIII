@@ -25,7 +25,7 @@ namespace Biblioteca_Popular_JuanXXIII
 
         [StringLength(50)]
         public string Genero { get; set; } // Flexible para opciones inclusivas
-
+        public string? Pronombre { get; set; }
         [EmailAddress(ErrorMessage = "Formato de correo inválido")]
         [StringLength(150)]
         public string? Correo { get; set; }
@@ -42,5 +42,7 @@ namespace Biblioteca_Popular_JuanXXIII
 
         [StringLength(50)]
         public string Categoria { get; set; }
+       
+        public bool Activo { get; set; }
     }
 }

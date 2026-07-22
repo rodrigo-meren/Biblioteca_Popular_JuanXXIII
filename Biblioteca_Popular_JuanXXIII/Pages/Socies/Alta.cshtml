@@ -1,0 +1,137 @@
+@page
+@model Biblioteca_Popular_JuanXXIII.Pages.Socies.AltaModel
+@{
+    ViewData["Title"] = "Alta de Socie";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-institucional-rojo"><i class="bi bi-person-plus-fill me-2"></i>Registrar nuex Socie</h2>
+</div>
+<hr />
+
+<form method="post" class="bg-white p-4 rounded shadow-sm">
+
+    <!-- Este bloque te va a avisar en texto rojo si alguna validación falla en el backend -->
+    <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
+
+    <div class="row">
+        <!-- Columna Izquierda: Datos Personales -->
+        <div class="col-md-6 border-end pe-4">
+            <h4 class="text-muted mb-3">Datos Personales</h4>
+
+            <div class="row">
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Socio.Nombre" class="control-label fw-bold">Nombre *</label>
+                    <input asp-for="Socio.Nombre" class="form-control" />
+                    <span asp-validation-for="Socio.Nombre" class="text-danger"></span>
+                </div>
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Socio.Apellido" class="control-label fw-bold">Apellido *</label>
+                    <input asp-for="Socio.Apellido" class="form-control" />
+                    <span asp-validation-for="Socio.Apellido" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Socio.DniCarnet" class="control-label fw-bold">DNI o Carnet *</label>
+                    <input asp-for="Socio.DniCarnet" class="form-control" />
+                    <span asp-validation-for="Socio.DniCarnet" class="text-danger"></span>
+                </div>
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Socio.FechaNacimiento" class="control-label fw-bold">Fecha de Nac. *</label>
+                    <input asp-for="Socio.FechaNacimiento" type="date" class="form-control" />
+                    <span asp-validation-for="Socio.FechaNacimiento" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Sección de Identidad de Género -->
+            <div class="row bg-light p-3 rounded mt-2 mb-3 border">
+                <div class="col-7 form-group">
+                    <label asp-for="Socio.Genero" class="control-label fw-bold">Género</label>
+                    <select asp-for="Socio.Genero" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option value="Mujer Cis">Mujer Cis</option>
+                        <option value="Varon Cis">Varón Cis</option>
+                        <option value="Mujer Trans">Mujer Trans</option>
+                        <option value="Varon Trans">Varón Trans</option>
+                        <option value="No Binarie">No Binarie</option>
+                        <option value="Fluido">Género Fluido</option>
+                        <option value="Agénero">Agénero</option>
+                        <option value="Otro">Otra identidad</option>
+                        <option value="Prefiere no decirlo">Prefiere no decirlo</option>
+                    </select>
+                </div>
+                <div class="col-5 form-group">
+                    <label asp-for="Socio.Pronombre" class="control-label fw-bold">Pronombre</label>
+                    <select asp-for="Socio.Pronombre" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option value="Ella">Ella</option>
+                        <option value="El">Él</option>
+                        <option value="Elle">Elle</option>
+                        <option value="Cualquiera">Indistinto</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Contacto y Administrativo -->
+        <div class="col-md-6 ps-4">
+            <h4 class="text-muted mb-3">Contacto y Administrativo</h4>
+
+            <div class="row">
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Socio.Telefono" class="control-label fw-bold">Teléfono</label>
+                    <input asp-for="Socio.Telefono" class="form-control" />
+                </div>
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Socio.Correo" class="control-label fw-bold">Correo Electrónico</label>
+                    <input asp-for="Socio.Correo" type="email" class="form-control" />
+                    <span asp-validation-for="Socio.Correo" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Socio.Direccion" class="control-label fw-bold">Dirección</label>
+                <input asp-for="Socio.Direccion" class="form-control" />
+            </div>
+
+            <div class="row">
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Socio.Categoria" class="control-label fw-bold">Categoría *</label>
+                    <select asp-for="Socio.Categoria" class="form-select">
+                        <option value="">Seleccionar...</option>
+                        <option value="Estudiante">Estudiante</option>
+                        <option value="Docente">Docente</option>
+                        <option value="Adulto">Adulto</option>
+                        <option value="Jubilado">Jubilado</option>
+                        <option value="Infantil">Infantil</option>
+                    </select>
+                    <span asp-validation-for="Socio.Categoria" class="text-danger"></span>
+                </div>
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Socio.FechaVencimiento" class="control-label fw-bold">Vencimiento cuota</label>
+                    <input asp-for="Socio.FechaVencimiento" type="date" class="form-control" />
+                </div>
+            </div>
+
+            <div class="form-check mt-4 p-3 bg-warning bg-opacity-10 border border-warning rounded">
+                <input class="form-check-input ms-1 border-warning" asp-for="Socio.Activo" checked />
+                <label class="form-check-label ms-2 fw-bold text-dark" asp-for="Socio.Activo">
+                    ¿Socie Activo/a/e?
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 pt-3 border-top text-end">
+        <a asp-page="./Inicio" class="btn btn-outline-secondary me-2">Cancelar</a>
+        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-2"></i>Guardar Socie</button>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

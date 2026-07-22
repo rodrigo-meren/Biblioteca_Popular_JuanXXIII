@@ -1,0 +1,120 @@
+@page
+@model Biblioteca_Popular_JuanXXIII.Pages.Socies.DetallesModel
+@{
+    ViewData["Title"] = "Detalles de Socie";
+
+    // Replicamos la lógica del semáforo para la cuota
+    string claseColorCuota = "bg-secondary";
+    string textoCuota = "Sin registrar";
+
+    if (Model.Socio.FechaVencimiento.HasValue)
+    {
+        var diasVencidos = (DateTime.Today - Model.Socio.FechaVencimiento.Value.Date).TotalDays;
+
+        if (diasVencidos <= 0)
+        {
+            claseColorCuota = "bg-success";
+            textoCuota = "Al día";
+        }
+        else if (diasVencidos <= 10)
+        {
+            claseColorCuota = "bg-warning text-dark";
+            textoCuota = "Alerta (Vencido hace poco)";
+        }
+        else
+        {
+            claseColorCuota = "bg-danger";
+            textoCuota = "En Deuda";
+        }
+    }
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="text-institucional-rojo">Ficha del Socie</h1>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="row g-0">
+        <!-- Columna del Perfil (Izquierda) -->
+        <div class="col-md-3 bg-light p-4 border-end d-flex flex-column align-items-center justify-content-center text-center">
+            <i class="bi bi-person-badge text-secondary" style="font-size: 8rem;"></i>
+
+            <div class="mt-3">
+                @if (Model.Socio.Activo)
+                {
+                    <span class="badge bg-success fs-6"><i class="bi bi-check-circle me-1"></i>Habilitade</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger fs-6"><i class="bi bi-x-circle me-1"></i>Inhabilitade</span>
+                }
+            </div>
+            <div class="mt-2">
+                <span class="badge border border-info text-info fs-6">Categoría: @Model.Socio.Categoria</span>
+            </div>
+        </div>
+
+        <!-- Columna de la Información (Derecha) -->
+        <div class="col-md-9">
+            <div class="card-body p-4">
+
+                <h2 class="card-title fw-bold text-dark mb-1">
+                    @Model.Socio.Apellido, @Model.Socio.Nombre
+                </h2>
+
+                <p class="text-muted mb-4">
+                    <i class="bi bi-card-text me-1"></i> DNI/Carnet: <strong class="text-dark">@Model.Socio.DniCarnet</strong>
+                    @if (!string.IsNullOrEmpty(Model.Socio.Pronombre))
+                    {
+                        <span class="badge bg-light text-secondary border ms-2">Pronombre: @Model.Socio.Pronombre</span>
+                    }
+                </p>
+
+                <div class="row border-top pt-3">
+                    <div class="col-md-6">
+                        <h5 class="text-institucional-rojo mb-3">Datos de Contacto</h5>
+
+                        <p class="mb-2"><i class="bi bi-telephone text-secondary me-2"></i> @(string.IsNullOrEmpty(Model.Socio.Telefono) ? "No registrado" : Model.Socio.Telefono)</p>
+                        <p class="mb-2"><i class="bi bi-envelope text-secondary me-2"></i> @(string.IsNullOrEmpty(Model.Socio.Correo) ? "No registrado" : Model.Socio.Correo)</p>
+                        <p class="mb-2"><i class="bi bi-geo-alt text-secondary me-2"></i> @(string.IsNullOrEmpty(Model.Socio.Direccion) ? "No registrada" : Model.Socio.Direccion)</p>
+                    </div>
+
+                    <div class="col-md-6 border-start ps-4">
+                        <h5 class="text-institucional-rojo mb-3">Información Administrativa</h5>
+
+                        <p class="mb-2">
+                            <span class="fw-bold text-secondary">Fecha de Alta:</span>
+                            @Model.Socio.FechaAlta.ToString("dd/MM/yyyy")
+                        </p>
+                        <p class="mb-2">
+                            <span class="fw-bold text-secondary">Nacimiento:</span>
+                            @Model.Socio.FechaNacimiento.ToString("dd/MM/yyyy")
+                        </p>
+                        <p class="mb-2">
+                            <span class="fw-bold text-secondary">Género:</span>
+                            @(string.IsNullOrEmpty(Model.Socio.Genero) ? "No especificado" : Model.Socio.Genero)
+                        </p>
+
+                        <div class="mt-3 p-2 bg-light border rounded">
+                            <span class="fw-bold text-secondary me-2">Estado de Cuota:</span>
+                            <span class="badge @claseColorCuota fs-6">@textoCuota</span>
+                            @if (Model.Socio.FechaVencimiento.HasValue)
+                            {
+                                <div class="text-muted mt-1" style="font-size: 0.85rem;">
+                                    Vencimiento: @Model.Socio.FechaVencimiento.Value.ToString("dd/MM/yyyy")
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Botones actualizados y alineados a la derecha -->
+            <div class="card-footer bg-white border-0 text-end p-4 border-top mt-2">
+                <a asp-page="./Editar" asp-route-id="@Model.Socio.Id" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Editar Ficha</a>
+                <a asp-page="./Inicio" class="btn btn-outline-secondary ms-2"><i class="bi bi-arrow-left"></i> Volver al Padrón</a>
+            </div>
+        </div>
+    </div>
+</div>
