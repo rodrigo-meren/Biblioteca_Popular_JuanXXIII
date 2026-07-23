@@ -1,0 +1,74 @@
+@page
+@model Biblioteca_Popular_JuanXXIII.Pages.Prestamos.AltaModel
+@{
+    ViewData["Title"] = "Nuevo Préstamo";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-institucional-rojo"><i class="bi bi-journal-arrow-up me-2"></i>Registrar Nuevo Préstamo</h2>
+</div>
+<hr />
+
+<form method="post" class="bg-white p-4 rounded shadow-sm">
+    <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
+
+    <div class="row">
+        <!-- Columna Izquierda: Selección de Socie y Libro -->
+        <div class="col-md-6 border-end pe-4">
+            <h4 class="text-muted mb-3">Datos del Préstamo</h4>
+            
+            <div class="form-group mb-4">
+                <label asp-for="Prestamo.SocioId" class="control-label fw-bold">Socie *</label>
+                <!-- ViewBag.SocioId es cargado automáticamente por el Scaffolding -->
+                <select asp-for="Prestamo.SocioId" class="form-select border-primary" asp-items="ViewBag.SocioId">
+                    <option value="">-- Seleccionar Socie --</option>
+                </select>
+                <span asp-validation-for="Prestamo.SocioId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-4">
+                <label asp-for="Prestamo.LibroId" class="control-label fw-bold">Libro a retirar *</label>
+                <select asp-for="Prestamo.LibroId" class="form-select border-primary" asp-items="ViewBag.LibroId">
+                    <option value="">-- Seleccionar Libro --</option>
+                </select>
+                <span asp-validation-for="Prestamo.LibroId" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Fechas -->
+        <div class="col-md-6 ps-4">
+            <h4 class="text-muted mb-3">Plazos</h4>
+
+            <div class="row">
+                <div class="col-12 form-group mb-3">
+                    <label asp-for="Prestamo.FechaPrestamo" class="control-label fw-bold">Fecha de Préstamo</label>
+                    <input asp-for="Prestamo.FechaPrestamo" type="date" class="form-control" />
+                    <span asp-validation-for="Prestamo.FechaPrestamo" class="text-danger"></span>
+                    <small class="text-muted">Por defecto es hoy, pero podés cambiarla si estás cargando un préstamo atrasado.</small>
+                </div>
+            </div>
+
+            <div class="row mt-2">
+                <div class="col-12 form-group mb-3 bg-light p-3 rounded border">
+                    <label asp-for="Prestamo.FechaVencimiento" class="control-label fw-bold text-dark">
+                        <i class="bi bi-calendar-event me-1"></i> Fecha de Devolución Esperada
+                    </label>
+                    <input asp-for="Prestamo.FechaVencimiento" type="date" class="form-control border-secondary mt-1" />
+                    <span asp-validation-for="Prestamo.FechaVencimiento" class="text-danger"></span>
+                </div>
+            </div>
+            
+            <!-- Los campos de Estado, Renovaciones y Fecha de Devolución Real 
+                 NO van acá porque el modelo los autocompleta al nacer -->
+        </div>
+    </div>
+
+    <div class="mt-4 pt-3 border-top text-end">
+        <a asp-page="./Inicio" class="btn btn-outline-secondary me-2">Cancelar</a>
+        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-circle me-2"></i>Confirmar Préstamo</button>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

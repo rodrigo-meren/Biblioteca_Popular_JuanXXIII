@@ -142,6 +142,9 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                     b.Property<int>("LibroId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Resena")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("SocioId")
                         .HasColumnType("int");
 

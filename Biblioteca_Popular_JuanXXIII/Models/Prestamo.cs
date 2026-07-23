@@ -1,5 +1,6 @@
-﻿using System;
-using Biblioteca_Popular_JuanXXIII.Models;
+﻿using Biblioteca_Popular_JuanXXIII.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -14,11 +15,13 @@ namespace Biblioteca_Popular_JuanXXIII
         [Required]
         public int SocioId { get; set; }
         [ForeignKey("SocioId")]
+        [ValidateNever]
         public Socio Socio { get; set; } // Navegación hacia el lector
 
         [Required]
         public int LibroId { get; set; }
         [ForeignKey("LibroId")]
+        [ValidateNever]
         public Libro Libro { get; set; } // Navegación hacia el libro físico
 
         // --- Fechas y Plazos ---
@@ -32,6 +35,7 @@ namespace Biblioteca_Popular_JuanXXIII
 
         // --- Lógica de Prórrogas (Autogestión) ---
         public int CantidadRenovaciones { get; set; } = 0; // Para contar cuántas veces prorrogó
+        public string? Resena { get; set; } // Opcional, para el comentario del socie al devolverlo
 
         [StringLength(50)]
         public string Estado { get; set; } = "Vigente"; // Puede ser: Vigente, Vencido, Devuelto

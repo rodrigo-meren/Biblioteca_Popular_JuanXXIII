@@ -1,0 +1,89 @@
+@page
+@model Biblioteca_Popular_JuanXXIII.Pages.Prestamos.EditarModel
+@{
+    ViewData["Title"] = "Modificar Préstamo";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-institucional-rojo"><i class="bi bi-pencil-square me-2"></i>Modificar Préstamo / Prórroga</h2>
+</div>
+<hr />
+
+<form method="post" class="bg-white p-4 rounded shadow-sm">
+    <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
+
+    <!-- CAMPO OCULTO VITAL: Si esto falta, se rompe la base de datos -->
+    <input type="hidden" asp-for="Prestamo.Id" />
+
+    <div class="row">
+        <!-- Columna Izquierda: Entidades -->
+        <div class="col-md-6 border-end pe-4">
+            <h4 class="text-muted mb-3">Datos del Préstamo</h4>
+
+            <div class="form-group mb-4">
+                <label asp-for="Prestamo.SocioId" class="control-label fw-bold">Socie</label>
+                <select asp-for="Prestamo.SocioId" class="form-select bg-light" asp-items="ViewBag.SocioId"></select>
+                <span asp-validation-for="Prestamo.SocioId" class="text-danger"></span>
+                <small class="text-muted">Modificar solo si hubo un error en la carga inicial.</small>
+            </div>
+
+            <div class="form-group mb-4">
+                <label asp-for="Prestamo.LibroId" class="control-label fw-bold">Libro prestado</label>
+                <select asp-for="Prestamo.LibroId" class="form-select bg-light" asp-items="ViewBag.LibroId"></select>
+                <span asp-validation-for="Prestamo.LibroId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3 p-3 bg-info bg-opacity-10 border border-info rounded">
+                <label asp-for="Prestamo.Estado" class="control-label fw-bold text-dark">Estado del Préstamo</label>
+                <select asp-for="Prestamo.Estado" class="form-select border-info mt-1">
+                    <option value="Vigente">Vigente</option>
+                    <option value="Vencido">Vencido</option>
+                    <option value="Devuelto">Devuelto</option>
+                    <option value="Extraviado">Extraviado</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Fechas y Prórrogas -->
+        <div class="col-md-6 ps-4">
+            <h4 class="text-muted mb-3">Fechas y Prórrogas</h4>
+
+            <div class="row">
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Prestamo.FechaPrestamo" class="control-label fw-bold">Fecha Retiro</label>
+                    <input asp-for="Prestamo.FechaPrestamo" type="date" class="form-control" />
+                </div>
+                <div class="col-6 form-group mb-3">
+                    <label asp-for="Prestamo.FechaVencimiento" class="control-label fw-bold text-primary">Devolución Esperada</label>
+                    <input asp-for="Prestamo.FechaVencimiento" type="date" class="form-control border-primary" />
+                    <small class="text-primary fw-bold" style="font-size: 0.75rem;">Atrasar para dar prórroga</small>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Prestamo.CantidadRenovaciones" class="control-label fw-bold">Cantidad de Renovaciones</label>
+                <input asp-for="Prestamo.CantidadRenovaciones" type="number" class="form-control" min="0" />
+                <small class="text-muted">Aumentar si el socie pidió extender el plazo original.</small>
+            </div>
+
+            <hr />
+
+            <div class="form-group mb-3">
+                <label asp-for="Prestamo.FechaDevolucion" class="control-label fw-bold text-secondary">Fecha de Devolución Real</label>
+                <input asp-for="Prestamo.FechaDevolucion" type="date" class="form-control text-secondary" />
+                <small class="text-muted">Se autocompleta al usar el botón verde de la grilla de Inicio.</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 pt-3 border-top text-end">
+        <a asp-page="./Inicio" class="btn btn-outline-secondary me-2">Cancelar</a>
+        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-2"></i>Guardar Cambios</button>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

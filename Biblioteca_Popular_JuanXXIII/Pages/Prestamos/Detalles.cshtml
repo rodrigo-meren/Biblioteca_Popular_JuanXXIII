@@ -1,0 +1,114 @@
+@page
+@model Biblioteca_Popular_JuanXXIII.Pages.Prestamos.DetallesModel
+@{
+    ViewData["Title"] = "Ficha del Préstamo";
+
+    // Reutilizamos la lógica del semáforo para mostrar el estado bien claro
+    string claseEstado = "bg-secondary";
+    if (Model.Prestamo.Estado == "Devuelto")
+    {
+        claseEstado = "bg-secondary bg-opacity-75";
+    }
+    else
+    {
+        var diasRestantes = (Model.Prestamo.FechaVencimiento.Date - DateTime.Today).TotalDays;
+        if (diasRestantes < 0) { claseEstado = "bg-danger"; }
+        else if (diasRestantes <= 3) { claseEstado = "bg-warning text-dark"; }
+        else { claseEstado = "bg-success"; }
+    }
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="text-institucional-rojo"><i class="bi bi-file-earmark-text me-2"></i>Legajo del Préstamo</h1>
+    <span class="badge @claseEstado fs-5 shadow-sm p-2">@Model.Prestamo.Estado</span>
+</div>
+
+<div class="row">
+    <!-- Mitad Izquierda: El Libro -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-dark text-white fw-bold">
+                <i class="bi bi-book me-2"></i>Libro Prestado
+            </div>
+            <div class="card-body">
+                <h4 class="text-primary mb-1">@Model.Prestamo.Libro.Titulo</h4>
+                <p class="text-muted mb-3 fs-5">@Model.Prestamo.Libro.Autor</p>
+                <hr />
+                <p class="mb-1"><i class="bi bi-upc-scan me-2 text-secondary"></i><strong>Inventario:</strong> @Model.Prestamo.Libro.CodigoInventario</p>
+                <p class="mb-0"><i class="bi bi-geo text-secondary me-2"></i><strong>Ubicación:</strong> @(Model.Prestamo.Libro.UbicacionFisica ?? "No registrada")</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mitad Derecha: El Socie -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header bg-institucional-rojo text-white fw-bold">
+                <i class="bi bi-person me-2"></i>Lector/a
+            </div>
+            <div class="card-body">
+                <h4 class="text-dark mb-1">@Model.Prestamo.Socio.Apellido, @Model.Prestamo.Socio.Nombre</h4>
+                <p class="text-muted mb-3 fs-5">
+                    DNI: @Model.Prestamo.Socio.DniCarnet
+                    @if (!string.IsNullOrEmpty(Model.Prestamo.Socio.Pronombre))
+                    {
+                        <span class="badge bg-light text-secondary border ms-2">@Model.Prestamo.Socio.Pronombre</span>
+                    }
+                </p>
+                <hr />
+                <p class="mb-1"><i class="bi bi-telephone me-2 text-secondary"></i><strong>Contacto:</strong> @(Model.Prestamo.Socio.Telefono ?? "Sin teléfono")</p>
+                <p class="mb-0"><i class="bi bi-envelope me-2 text-secondary"></i><strong>Correo:</strong> @(Model.Prestamo.Socio.Correo ?? "Sin correo")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Línea de tiempo y Renovaciones -->
+<div class="card shadow-sm border-0 mb-4 bg-light">
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-3 border-end">
+                <div class="text-muted mb-1"><i class="bi bi-calendar-check me-1"></i>Retirado</div>
+                <div class="fw-bold fs-5">@Model.Prestamo.FechaPrestamo.ToString("dd/MM/yyyy")</div>
+            </div>
+            <div class="col-md-3 border-end">
+                <div class="text-muted mb-1"><i class="bi bi-calendar-event me-1"></i>Vencimiento</div>
+                <div class="fw-bold fs-5 text-primary">@Model.Prestamo.FechaVencimiento.ToString("dd/MM/yyyy")</div>
+            </div>
+            <div class="col-md-3 border-end">
+                <div class="text-muted mb-1"><i class="bi bi-arrow-repeat me-1"></i>Prórrogas</div>
+                <div class="fw-bold fs-5 text-info">@Model.Prestamo.CantidadRenovaciones</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted mb-1"><i class="bi bi-box-arrow-in-down me-1"></i>Devuelto el</div>
+                <div class="fw-bold fs-5 @(Model.Prestamo.FechaDevolucion.HasValue ? "text-success" : "text-danger")">
+                    @(Model.Prestamo.FechaDevolucion.HasValue ? Model.Prestamo.FechaDevolucion.Value.ToString("dd/MM/yyyy") : "Pendiente")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN DE RESEÑA DEL SOCIE -->
+<div class="card shadow-sm border-0 border-start border-4 border-info mb-4">
+    <div class="card-body">
+        <h5 class="card-title text-info mb-3"><i class="bi bi-chat-quote-fill me-2"></i>Reseña del lector</h5>
+
+        @if (!string.IsNullOrEmpty(Model.Prestamo.Resena)) // Asumiendo que agregaste el campo Resena
+        {
+            <blockquote class="blockquote bg-light p-3 rounded fst-italic border">
+                "@Model.Prestamo.Resena"
+            </blockquote>
+        }
+        else
+        {
+            <p class="text-muted mb-0 fst-italic">El socie no dejó ninguna reseña o comentario para este préstamo.</p>
+        }
+    </div>
+</div>
+
+<div class="text-end border-top pt-3 mt-2">
+    <!-- Si quieren agregarle reseña después de devuelto, lo hacen desde Editar -->
+    <a asp-page="./Editar" asp-route-id="@Model.Prestamo.Id" class="btn btn-primary"><i class="bi bi-pencil me-2"></i>Editar Préstamo / Agregar Reseña</a>
+    <a asp-page="./Inicio" class="btn btn-outline-secondary ms-2"><i class="bi bi-arrow-left me-2"></i>Volver al Control</a>
+</div>
