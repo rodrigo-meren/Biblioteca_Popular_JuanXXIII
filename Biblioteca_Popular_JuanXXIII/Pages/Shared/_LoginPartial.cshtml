@@ -1,0 +1,32 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<ul class="navbar-nav ms-auto">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item d-flex align-items-center">
+            <span class="text-light me-3">
+                <i class="bi bi-person-circle me-1"></i> Hola, @User.Identity?.Name!
+            </span>
+        </li>
+        <li class="nav-item">
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" method="post">
+                <button type="submit" class="btn btn-outline-light btn-sm mt-1">Cerrar Sesión</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-white fw-bold" asp-area="Identity" asp-page="/Account/Register">
+                <i class="bi bi-person-plus me-1"></i> Registrarse
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="btn btn-light btn-sm mt-1 ms-2 fw-bold text-institucional-rojo" asp-area="Identity" asp-page="/Account/Login">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión
+            </a>
+        </li>
+    }
+</ul>

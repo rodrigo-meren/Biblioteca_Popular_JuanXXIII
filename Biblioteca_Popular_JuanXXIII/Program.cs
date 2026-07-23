@@ -1,6 +1,8 @@
-using Biblioteca_Popular_JuanXXIII;
 using Biblioteca_Popular_JuanXXIII.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+
 
 namespace Biblioteca_Popular_JuanXXIII
 {
@@ -17,7 +19,17 @@ namespace Biblioteca_Popular_JuanXXIII
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
-            // ------------------------------------------------------
+            // Configuración de Identity con soporte para Roles
+            builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = false;
+                options.Password.RequireDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.User.RequireUniqueEmail = false;
+            })
+            .AddRoles<IdentityRole>() 
+            .AddEntityFrameworkStores<ApplicationDbContext>();
+
 
             var app = builder.Build();
 
@@ -33,9 +45,12 @@ namespace Biblioteca_Popular_JuanXXIII
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.MapRazorPages();
+              
 
             app.Run();
         }
