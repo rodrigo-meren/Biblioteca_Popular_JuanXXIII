@@ -6,10 +6,39 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="text-danger">Catálogo de Libros</h1> 
-    <a asp-page="./Alta" class="btn btn-primary">Nuevo Libro</a>
+    @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
+    {
+        <a asp-page="./Crear" class="btn btn-success fw-bold">
+            <i class="bi bi-plus-circle me-1"></i> Nuevo Libro
+        </a>
+    }
 </div>
 
+
 <div class="table-responsive">
+    @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
+    {
+    <form id="form-sincronizar" method="post" asp-page-handler="SincronizarLote" class="mb-3 d-inline">
+    <button type="submit" class="btn btn-warning shadow-sm fw-bold">
+        <i class="bi bi-arrow-repeat me-1"></i> Sincronizar Portadas (Lote de 10)
+    </button>
+</form>
+    }
+    <form method="get" class="mb-4">
+    <div class="row g-2 align-items-center">
+        <div class="col-auto">
+            <label class="col-form-label fw-bold">Buscar Libro:</label>
+        </div>
+        <div class="col-md-5">
+            <!-- asp-for="Buscar" conecta este input con tu variable en C# -->
+            <input type="text" class="form-control shadow-sm" asp-for="Buscar" placeholder="Título, Autor o ISBN..." />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary shadow-sm"><i class="bi bi-search"></i> Buscar</button>
+            <a asp-page="./Inicio" class="btn btn-outline-secondary shadow-sm">Limpiar</a>
+        </div>
+    </div>
+</form>
     <table class="table table-hover table-striped align-middle">
         <thead class="table-dark">
             <tr>
@@ -37,20 +66,106 @@
                             <span class="badge bg-warning text-dark">Prestado</span>
                         }
                     </td>
-                    <td class="text-end">
-                        <a asp-page="./Detalles" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">Detalles</a>
-                        <!-- Botón Eliminar con cartel de advertencia integrado -->
-                        <form method="post" asp-page-handler="Eliminar" asp-route-id="@item.Id" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                    onclick="return confirm('¿Estás seguro de que querés borrar este libro? Esta acción no se puede deshacer.');">
-                                Borrar
-                            </button>
-                        </form>
-                        <a asp-page="./Editar" asp-route-id="@item.Id" class="btn btn-sm btn-secondary">Editar</a>
-                        
-                    </td>
+                    @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario") || User.IsInRole("Socio"))
+                    {
+                        <td>
+                            @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
+                            {
+                                <a class="btn btn-sm btn-outline-secondary" asp-page="./Editar" asp-route-id="@item.Id"><i class="bi bi-pencil"></i></a>
+                                <a class="btn btn-sm btn-outline-danger" asp-page="./Eliminar" asp-route-id="@item.Id"><i class="bi bi-trash"></i></a>
+                            }
+
+                            @if (User.IsInRole("Socio"))
+                            {
+                                <form method="post" asp-page-handler="Reservar" class="d-inline">
+                                    <input type="hidden" name="libroId" value="@item.Id" />
+                                    <button type="submit" class="btn btn-sm btn-primary fw-bold shadow-sm">
+                                        <i class="bi bi-bookmark-plus"></i> Reservar
+                                    </button>
+                                </form>
+                            }
+                        </td>                
+                    }
                 </tr>
             }
         </tbody>
     </table>
+   @if (Model.TotalPaginas > 1)
+{
+
+    int maxPaginasVisibles = 5;
+    int paginaInicio = Math.Max(1, Model.PaginaActual - 2);
+    int paginaFin = Math.Min(Model.TotalPaginas, paginaInicio + maxPaginasVisibles - 1);
+
+    // Ajuste matemático por si el usuario está en las últimas páginas de la lista
+    paginaInicio = Math.Max(1, paginaFin - maxPaginasVisibles + 1);
+
+    <nav aria-label="Navegación de páginas">
+        <ul class="pagination justify-content-center mt-4 shadow-sm">
+            
+            <!-- Botón Primera (Súper útil para volver rápido) -->
+            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="1" asp-route-Buscar="@Model.Buscar">
+                    <i class="bi bi-chevron-double-left"></i> Primera
+                </a>
+            </li>
+
+            <!-- Botón Anterior -->
+            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual - 1)" asp-route-Buscar="@Model.Buscar">
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </a>
+            </li>
+
+            <!-- Números de página con ventana dinámica -->
+            @for (int i = paginaInicio; i <= paginaFin; i++)
+            {
+                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                    <a class="page-link" asp-route-PaginaActual="@i" asp-route-Buscar="@Model.Buscar">@i</a>
+                </li>
+            }
+
+            <!-- Botón Siguiente -->
+            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual + 1)" asp-route-Buscar="@Model.Buscar">
+                    Siguiente <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            
+            <!-- Botón Última -->
+            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="@Model.TotalPaginas" asp-route-Buscar="@Model.Buscar">
+                    Última <i class="bi bi-chevron-double-right"></i>
+                </a>
+            </li>
+            
+        </ul>
+    </nav>
+    
+    <!-- Muestra informativa opcional para no perderse -->
+    <div class="text-center text-muted small mt-2">
+        Página @Model.PaginaActual de @Model.TotalPaginas
+    </div>
+}
 </div>
+
+              @section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            
+            // Buscamos el formulario directamente por su ID
+            let formSincronizacion = document.getElementById('form-sincronizar');
+            
+            if (formSincronizacion) {
+                console.log("¡Autoclicker activado! Esperando 3 segundos para el próximo lote...");
+                
+                // Le damos 3 segundos de respiro a la API de Google
+                setTimeout(function () {
+                    formSincronizacion.submit();
+                }, 3000); 
+            } else {
+                console.log("No se encontró el botón de sincronizar.");
+            }
+        });
+    </script>
+}

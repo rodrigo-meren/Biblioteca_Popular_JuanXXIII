@@ -22,6 +22,43 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Cuota", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("FechaPago")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaVencimiento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MesCorrespondiente")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("Monto")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("SocioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SocioId");
+
+                    b.ToTable("Cuotas");
+                });
+
             modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Libro", b =>
                 {
                     b.Property<int>("Id")
@@ -58,6 +95,7 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Sinopsis")
+                        .HasMaxLength(5000)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Titulo")
@@ -70,12 +108,39 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UrlPortada")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Libros");
+                });
+
+            modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Recordatorio", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("EsUrgente")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Resuelto")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Texto")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Recordatorios");
                 });
 
             modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Resena", b =>
@@ -112,6 +177,39 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                     b.HasIndex("SocioId");
 
                     b.ToTable("Resenas");
+                });
+
+            modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Reserva", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("FechaLimiteRetiro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaSolicitud")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LibroId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SocioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LibroId");
+
+                    b.HasIndex("SocioId");
+
+                    b.ToTable("Reservas");
                 });
 
             modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Prestamo", b =>
@@ -204,6 +302,9 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IdentityUserId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -424,7 +525,37 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Cuota", b =>
+                {
+                    b.HasOne("Biblioteca_Popular_JuanXXIII.Socio", "Socio")
+                        .WithMany("Cuotas")
+                        .HasForeignKey("SocioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Socio");
+                });
+
             modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Resena", b =>
+                {
+                    b.HasOne("Biblioteca_Popular_JuanXXIII.Models.Libro", "Libro")
+                        .WithMany()
+                        .HasForeignKey("LibroId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Biblioteca_Popular_JuanXXIII.Socio", "Socio")
+                        .WithMany()
+                        .HasForeignKey("SocioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Libro");
+
+                    b.Navigation("Socio");
+                });
+
+            modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Reserva", b =>
                 {
                     b.HasOne("Biblioteca_Popular_JuanXXIII.Models.Libro", "Libro")
                         .WithMany()
@@ -511,6 +642,11 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Socio", b =>
+                {
+                    b.Navigation("Cuotas");
                 });
 #pragma warning restore 612, 618
         }

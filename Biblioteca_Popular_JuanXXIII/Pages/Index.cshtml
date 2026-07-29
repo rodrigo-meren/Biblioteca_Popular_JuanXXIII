@@ -1,10 +1,78 @@
 ﻿@page
-@model IndexModel
+@model Biblioteca_Popular_JuanXXIII.Pages.IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="bg-danger text-white rounded-4 shadow-sm p-5 mb-5 mt-3 text-center position-relative overflow-hidden">
+    <div class="position-relative z-index-1">
+        <h1 class="display-4 fw-bold mb-3">Tu mundo en la Juan XXIII</h1>
+        <p class="lead mb-4 fw-light">Libros, cultura, talleres y un espacio de encuentro para toda la comunidad.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="/Libros/Inicio" class="btn btn-light btn-lg text-danger fw-bold shadow-sm px-4">
+                <i class="bi bi-search me-2"></i>Explorar Catálogo
+            </a>
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <a href="/Identity/Account/Login" class="btn btn-outline-light btn-lg fw-bold px-4">
+                    <i class="bi bi-person-circle me-2"></i>Mi Cuenta
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-5">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
+            <h3 class="fw-bold text-dark mb-0"><i class="bi bi-star-fill text-warning me-2"></i> Recomendados del Mes</h3>
+            <a href="/Catalogo" class="text-danger text-decoration-none small fw-bold">Ver todos</a>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm border-0 bg-light">
+                    <div class="card-body">
+                        <span class="badge bg-danger mb-2">Ficción</span>
+                        <h5 class="fw-bold text-dark">Los árboles caídos también son el bosque</h5>
+                        <p class="text-muted small mb-3">Alejandra Kamiya</p>
+                        <p class="card-text small text-secondary">"Una colección de cuentos magistral donde la naturaleza humana y el entorno se entrelazan de forma poética y profunda..."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm border-0 bg-light">
+                    <div class="card-body">
+                        <span class="badge bg-danger mb-2">Historia</span>
+                        <h5 class="fw-bold text-dark">24 Horas en la vida de una mujer</h5>
+                        <p class="text-muted small mb-3">Stefan Zweig</p>
+                        <p class="card-text small text-secondary">"Un relato atrapante sobre la pasión, la moral y cómo un solo instante puede cambiar el destino para siempre."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="border-bottom pb-2 mb-4">
+            <h3 class="fw-bold text-dark mb-0"><i class="bi bi-calendar-event text-primary me-2"></i> La Biblio al Día</h3>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-3 border-start border-primary border-4">
+            <div class="card-body">
+                <p class="text-primary small fw-bold mb-1">VIERNES 15 | 18:00 HS</p>
+                <h6 class="fw-bold">Taller de lectura infantil</h6>
+                <p class="text-muted small mb-0">Traé a los más chicos a disfrutar de una tarde mágica con nuestros cuentacuentos locales. Entrada libre y gratuita.</p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 border-start border-success border-4">
+            <div class="card-body">
+                <p class="text-success small fw-bold mb-1">¡NUEVO SERVICIO!</p>
+                <h6 class="fw-bold">Ya podés abonar tu cuota online</h6>
+                <p class="text-muted small mb-0">Entrando a tu panel de autogestión de "Mi Perfil", ya podés consultar tus deudas y abonarlas cómodamente desde tu casa.</p>
+            </div>
+        </div>
+    </div>
 </div>

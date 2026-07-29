@@ -1,0 +1,114 @@
+﻿@page 
+@model Biblioteca_Popular_JuanXXIII.Pages.MiPerfil.InicioModel
+@{
+    ViewData["Title"] = "Mi Biblioteca";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-primary fw-bold">¡Hola, @Model.SocioActual.Nombre!</h2>
+    <!-- Botón para cambiar la contraseña a futuro -->
+    <a href="/MiPerfil/CambiarClave" class="btn btn-outline-secondary btn-sm"><i class="bi bi-shield-lock"></i> Cambiar contraseña</a>
+</div>
+@if (TempData["Mensaje"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm mt-3" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["Mensaje"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Columna Izquierda: Lo urgente (Libros) -->
+    <div class="col-md-8">
+        
+        <!-- Libros en Préstamo -->
+        <div class="card shadow-sm mb-4 border-primary">
+            <div class="card-header bg-primary text-white fw-bold">
+                <i class="bi bi-book"></i> Mis Libros Actuales
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    @if (Model.MisPrestamos != null && Model.MisPrestamos.Any())
+                    {
+                        foreach (var prestamo in Model.MisPrestamos)
+                        {
+                            var estaVencido = prestamo.FechaVencimiento < DateTime.Now;
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">@prestamo.Libro.Titulo</h6>
+                                    <small class="text-muted d-block">Autor: @prestamo.Libro.Autor</small>
+                                    
+                                    @if (estaVencido)
+                                    {
+                                        <span class="badge bg-danger mt-1">Vencido el @prestamo.FechaVencimiento.ToString("dd/MM/yyyy")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success mt-1">Vence el @prestamo.FechaVencimiento.ToString("dd/MM/yyyy")</span>
+                                    }
+                                </div>
+                                <div>
+                                    <!-- Si no está vencido, le dejamos pedir prórroga -->
+                                    @if (!estaVencido)
+                                                                        {
+                                    <form method="post" asp-page-handler="SolicitarProrroga" class="d-inline">
+                                        <!-- Enviamos el ID del préstamo oculto -->
+                                        <input type="hidden" name="prestamoId" value="@prestamo.Id" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary shadow-sm" 
+                                                onclick="return confirm('¿Querés extender el préstamo de este libro por 7 días más?');">
+                                            <i class="bi bi-calendar-plus"></i> Prórroga
+                                        </button>
+                                    </form>
+                                    }
+                                </div>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="list-group-item text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                            No tenés libros en préstamo en este momento. <br>
+                            ¡Pasá por el catálogo a buscar tu próxima lectura!
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Columna Derecha: Pagos y Recomendaciones -->
+    <div class="col-md-4">
+        
+        <!-- Estado de Cuenta (Cuotas) -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white fw-bold text-danger border-bottom-0 pb-0">
+                <i class="bi bi-wallet2"></i> Estado de Cuenta
+            </div>
+            <div class="card-body text-center pt-2">
+                @if (Model.MisCuotasPendientes != null && Model.MisCuotasPendientes.Any())
+                {
+                    decimal deudaTotal = Model.MisCuotasPendientes.Sum(c => c.Monto);
+                    
+                    <h3 class="fw-bold text-danger mb-0">$@deudaTotal.ToString("0.00")</h3>
+                    <p class="text-muted small mb-3">Tenés @Model.MisCuotasPendientes.Count cuota(s) pendiente(s).</p>
+                    <form method="post" asp-page-handler="PagarConMercadoPago">
+    <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">
+        <i class="bi bi-credit-card"></i> Pagar con Mercado Pago
+    </button>
+</form>
+                }
+                else
+                {
+                    <div class="text-success my-3">
+                        <i class="bi bi-check-circle fs-1 d-block mb-2"></i>
+                        <h6 class="fw-bold">¡Todo al día!</h6>
+                        <small>Gracias por tu aporte a la biblioteca.</small>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Biblioteca_Popular_JuanXXIII.Models;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Biblioteca_Popular_JuanXXIII  
@@ -44,5 +45,8 @@ namespace Biblioteca_Popular_JuanXXIII
         public string Categoria { get; set; }
        
         public bool Activo { get; set; }
+        // --- Relación con Cuotas ---
+        public ICollection<Cuota>? Cuotas { get; set; }
+        public string? IdentityUserId { get; set; }
     }
 }

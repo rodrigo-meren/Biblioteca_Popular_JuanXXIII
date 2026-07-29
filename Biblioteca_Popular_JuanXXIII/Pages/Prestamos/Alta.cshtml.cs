@@ -3,6 +3,7 @@ using Biblioteca_Popular_JuanXXIII.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore; // <- Agregamos esto para usar ToListAsync()
 
 namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
 {
@@ -15,7 +16,6 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
             _context = context;
         }
 
-        // Acá Prestamo es UN SOLO objeto, por eso funciona el LibroId
         [BindProperty]
         public Prestamo Prestamo { get; set; } = default!;
 
@@ -24,6 +24,28 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
             CargarListasDesplegables();
             return Page();
         }
+
+        // --- NUEVO: MÉTODO PARA EL BUSCADOR EN VIVO DE SELECT2 ---
+        public async Task<JsonResult> OnGetBuscarLibrosAsync(string term)
+        {
+            if (string.IsNullOrEmpty(term))
+            {
+                return new JsonResult(new { results = new List<object>() });
+            }
+
+            var libros = await _context.Libros
+                .Where(l => l.Titulo.Contains(term) || l.Autor.Contains(term))
+                .Select(l => new {
+                    id = l.Id,
+                    // Así se verá en la lista: "Código - Título (Autor)"
+                    text = l.CodigoInventario + " - " + l.Titulo + " (" + l.Autor + ")"
+                })
+                .Take(20) // Limitamos a los mejores 20 resultados para que sea instantáneo
+                .ToListAsync();
+
+            return new JsonResult(new { results = libros });
+        }
+        // ---------------------------------------------------------
 
         public async Task<IActionResult> OnPostAsync()
         {
@@ -44,7 +66,7 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                     return Page();
                 }
 
-                libro.Disponible = false;
+                libro.Disponible = false; // Lo marcamos como no disponible
             }
 
             _context.Prestamos.Add(Prestamo);
@@ -55,6 +77,7 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
 
         private void CargarListasDesplegables()
         {
+            // Mantenemos la carga normal para los Socies
             var listaSocies = _context.Socios.Select(s => new
             {
                 Id = s.Id,
@@ -63,13 +86,8 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
 
             ViewData["SocioId"] = new SelectList(listaSocies, "Id", "Descripcion");
 
-            var listaLibros = _context.Libros.Select(l => new
-            {
-                Id = l.Id,
-                Descripcion = l.Titulo + " - " + l.Autor
-            }).OrderBy(l => l.Descripcion).ToList();
-
-            ViewData["LibroId"] = new SelectList(listaLibros, "Id", "Descripcion");
+            // ¡Magia! Borramos la carga masiva de Libros de acá.
+            // La vista ahora va a usar el método OnGetBuscarLibrosAsync para traerlos de a poco.
         }
     }
 }

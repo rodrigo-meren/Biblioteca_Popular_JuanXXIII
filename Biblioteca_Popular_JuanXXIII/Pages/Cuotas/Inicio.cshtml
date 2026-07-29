@@ -1,0 +1,88 @@
+﻿@page
+@model Biblioteca_Popular_JuanXXIII.Pages.Cuotas.InicioModel
+@{
+    ViewData["Title"] = "Estadísticas Contables";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="text-success fw-bold"><i class="bi bi-graph-up-arrow"></i> Contabilidad y Cuotas</h1>
+    
+    <!-- Botón Mágico del Lote Mensual -->
+    <form method="post" asp-page-handler="GenerarLote" class="m-0">
+        <button type="submit" class="btn btn-primary shadow-sm fw-bold" 
+                onclick="return confirm('¿Estás seguro de generar el lote de cuotas para el mes actual?');">
+            <i class="bi bi-magic me-1"></i> Generar Lote del Mes
+        </button>
+    </form>
+</div>
+
+<!-- TARJETAS DE ESTADÍSTICAS -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="card-title text-uppercase mb-2 opacity-75">Ingresos del Mes</h6>
+                <h2 class="mb-0 fw-bold">$@Model.RecaudacionDelMes.ToString("0.00")</h2>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <small><i class="bi bi-check-circle"></i> @Model.CantidadPagosMes cobros realizados</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-danger text-white shadow-sm h-100">
+            <div class="card-body">
+                <h6 class="card-title text-uppercase mb-2 opacity-75">Deuda en la Calle</h6>
+                <h2 class="mb-0 fw-bold">$@Model.DeudaPendiente.ToString("0.00")</h2>
+            </div>
+            <div class="card-footer bg-transparent border-0 pt-0">
+                <small><i class="bi bi-exclamation-triangle"></i> @Model.CantidadMorosos cuotas impagas</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- HISTORIAL DE ÚLTIMOS INGRESOS -->
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-white fw-bold">
+        <i class="bi bi-receipt"></i> Últimos Pagos Registrados
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha de Pago</th>
+                        <th>Socie</th>
+                        <th>Mes Abonado</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.UltimosPagos != null && Model.UltimosPagos.Any())
+                    {
+                        foreach (var pago in Model.UltimosPagos)
+                        {
+                            <tr>
+                                <td>@pago.FechaPago?.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td><strong>@pago.Socio.Nombre @pago.Socio.Apellido</strong></td>
+                                <td class="text-capitalize">@pago.MesCorrespondiente</td>
+                                <td class="text-success fw-bold">+$@pago.Monto.ToString("0.00")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">
+                                <i class="bi bi-wallet2 fs-2 d-block mb-2"></i>
+                                Todavía no hay cobros registrados en el sistema.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

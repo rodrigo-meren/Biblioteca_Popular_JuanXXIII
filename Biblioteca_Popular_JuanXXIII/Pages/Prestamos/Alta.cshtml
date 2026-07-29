@@ -27,10 +27,10 @@
             </div>
 
             <div class="form-group mb-4">
-                <label asp-for="Prestamo.LibroId" class="control-label fw-bold">Libro a retirar *</label>
-                <select asp-for="Prestamo.LibroId" class="form-select border-primary" asp-items="ViewBag.LibroId">
-                    <option value="">-- Seleccionar Libro --</option>
-                </select>
+               <label class="form-label fw-bold">Buscar Libro</label>
+<select asp-for="Prestamo.LibroId" class="form-select" id="buscador-libros">
+    <!-- Lo dejamos vacío a propósito, los datos vienen de la búsqueda -->
+</select>
                 <span asp-validation-for="Prestamo.LibroId" class="text-danger"></span>
             </div>
         </div>
@@ -70,5 +70,37 @@
 </form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+    <!-- CSS de Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <!-- JS de Select2 (Requiere jQuery, que ASP.NET ya trae por defecto) -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#buscador-libros').select2({
+                placeholder: "Escribí el título o autor del libro...",
+                minimumInputLength: 3, // Espera a que escribas 3 letras para buscar
+                language: {
+                    inputTooShort: function() { return 'Escribí al menos 3 letras...'; },
+                    noResults: function() { return 'No se encontraron libros'; },
+                    searching: function() { return 'Buscando...'; }
+                },
+                ajax: {
+                    url: '?handler=BuscarLibros', // Llama al método C# que creamos
+                    dataType: 'json',
+                    delay: 250, // Pequeña pausa de 1/4 de segundo para no saturar el servidor si tipea rápido
+                    data: function (params) {
+                        return { term: params.term };
+                    },
+                    processResults: function (data) {
+                        return { results: data.results };
+                    }
+                }
+            });
+        });
+    </script>
+}
 }

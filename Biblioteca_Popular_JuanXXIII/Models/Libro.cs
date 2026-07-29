@@ -24,14 +24,14 @@ namespace Biblioteca_Popular_JuanXXIII.Models
 
         public int? AnioPublicacion { get; set; }
 
-        // ¡Acá está la magia! El ? indica que permite NULL (para libros viejos)
+        
         [StringLength(50)]
-        public string? ISBN { get; set; }        
-
-        [StringLength(100)]
+        public string? ISBN { get; set; }
+        [MaxLength(500)]
         public string? UrlPortada { get; set; }
         [StringLength(50)]
         public string? UbicacionFisica { get; set; }
+        [MaxLength(5000)]
         public string? Sinopsis { get; set; }
         public string? GeneroLiterario { get; set; }
 

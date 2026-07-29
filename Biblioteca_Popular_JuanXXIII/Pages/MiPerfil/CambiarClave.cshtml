@@ -1,0 +1,43 @@
+﻿@page
+@model Biblioteca_Popular_JuanXXIII.Pages.MiPerfil.CambiarClaveModel
+@{
+    ViewData["Title"] = "Cambiar Contraseña";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-secondary text-white fw-bold">
+                <i class="bi bi-shield-lock me-2"></i> Modificar mi clave de acceso
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.ClaveActual" class="form-control" autocomplete="current-password" placeholder="Actual" />
+                        <label asp-for="Input.ClaveActual"></label>
+                        <span asp-validation-for="Input.ClaveActual" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Input.NuevaClave" class="form-control" autocomplete="new-password" placeholder="Nueva" />
+                        <label asp-for="Input.NuevaClave"></label>
+                        <span asp-validation-for="Input.NuevaClave" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input asp-for="Input.ConfirmarClave" class="form-control" autocomplete="new-password" placeholder="Confirmar" />
+                        <label asp-for="Input.ConfirmarClave"></label>
+                        <span asp-validation-for="Input.ConfirmarClave" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-page="./Inicio" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver al Perfil</a>
+                        <button type="submit" class="btn btn-primary fw-bold"><i class="bi bi-check2-circle"></i> Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

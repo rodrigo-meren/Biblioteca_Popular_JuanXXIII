@@ -1,10 +1,23 @@
 @page
 @model AccessDeniedModel
 @{
-    ViewData["Title"] = "Access denied";
+    ViewData["Title"] = "Acceso Denegado";
 }
 
-<header>
-    <h1 class="text-danger">@ViewData["Title"]</h1>
-    <p class="text-danger">You do not have access to this resource.</p>
-</header>
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 text-center">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-danger text-white fw-bold">
+                <i class="bi bi-shield-lock me-2"></i> Error de permisos
+            </div>
+            <div class="card-body p-4">
+                <h3 class="text-danger fw-bold mb-3">Acceso Denegado</h3>
+                <p class="text-muted">No tenés los permisos necesarios para ver esta sección. Si creés que esto es un error, contactá al administrador.</p>
+                
+                <a href="javascript:history.back()" class="btn btn-outline-secondary mt-3">
+                    <i class="bi bi-arrow-left me-1"></i> Volver atrás
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

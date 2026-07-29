@@ -16,5 +16,8 @@ namespace Biblioteca_Popular_JuanXXIII.Data
         public DbSet<Libro> Libros { get; set; }
         public DbSet<Prestamo> Prestamos { get; set; }
         public DbSet<Resena> Resenas { get; set; }
+        public DbSet<Cuota> Cuotas { get; set; }
+        public DbSet<Recordatorio> Recordatorios { get; set; }
+        public DbSet<Reserva> Reservas { get; set; }
     }
 }

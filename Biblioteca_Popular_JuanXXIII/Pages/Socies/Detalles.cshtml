@@ -105,9 +105,77 @@
                                 </div>
                             }
                         </div>
+
                     </div>
                 </div>
-
+                <div class="card shadow-sm mt-4">
+    <div class="card-header bg-white fw-bold text-danger d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-cash-coin"></i> Estado de Cuotas</span>
+        
+        <!-- Botón temporal para agregar una cuota manual a futuro -->
+        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-plus"></i> Adelantar Mes</button>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Mes</th>
+                    <th>Vencimiento</th>
+                    <th>Monto</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Cuotas != null && Model.Cuotas.Any())
+                {
+                    foreach (var cuota in Model.Cuotas)
+                    {
+                        <tr>
+                            <td class="text-capitalize">@cuota.MesCorrespondiente</td>
+                            <td>@cuota.FechaVencimiento.ToString("dd/MM/yyyy")</td>
+                            <td>$@cuota.Monto.ToString("0.00")</td>
+                            <td>
+                                @if (cuota.Estado == "Pagada")
+                                {
+                                    <span class="badge bg-success">Pagada el @cuota.FechaPago?.ToString("dd/MM")</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">@cuota.Estado</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (cuota.Estado != "Pagada")
+                                {
+                                    <form method="post" asp-page-handler="RegistrarPago" class="m-0">
+                                        <input type="hidden" name="cuotaId" value="@cuota.Id" />
+                                        <input type="hidden" name="socioId" value="@Model.Socio.Id" />
+                                        <button type="submit" class="btn btn-sm btn-success shadow-sm" onclick="return confirm('¿Confirmar pago en efectivo?');">
+                                            <i class="bi bi-check-circle"></i> Cobrar
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-outline-secondary disabled">
+                                        <i class="bi bi-receipt"></i> Recibo
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">No hay cuotas registradas para este socie.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>  
             </div>
 
             <!-- Botones actualizados y alineados a la derecha -->

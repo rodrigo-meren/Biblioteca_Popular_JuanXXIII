@@ -9,11 +9,46 @@
     <a asp-page="Alta" class="btn btn-primary shadow-sm">
         <i class="bi bi-person-plus-fill me-1"></i> Nuevx Socie
     </a>
+    <form method="post" asp-page-handler="GenerarLote" class="d-inline ms-2">
+            <button type="submit" class="btn btn-warning shadow-sm fw-bold" 
+                    onclick="return confirm('¿Generar el lote de cuotas de este mes para todos los socies?');">
+                <i class="bi bi-magic me-1"></i> Generar Cuotas del Mes
+            </button>
+   </form>
 </div>
 
 <div class="card shadow-sm border-0">
     <div class="card-body p-0 table-responsive">
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" asp-page-handler="Importar">
+                    <label class="form-label fw-bold">Importar Socies desde CSV</label>
+                    <div class="input-group">
+                        <input type="file" class="form-control" name="archivoCsv" accept=".csv" required>
+                        <button class="btn btn-danger text-white fw-bold" type="submit">
+                            <i class="bi bi-upload me-1"></i> Subir e Importar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <form method="get" class="mb-4">
+            <div class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <label class="col-form-label fw-bold">Buscar Socie:</label>
+                </div>
+                <div class="col-md-5">
+                    <!-- asp-for="Buscar" conecta este input con tu variable en C# -->
+                    <input type="text" class="form-control shadow-sm" asp-for="Buscar" placeholder="DNI, Nombre o Apellido..." />
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary shadow-sm"><i class="bi bi-search"></i> Buscar</button>
+                    <a asp-page="./Inicio" class="btn btn-outline-secondary shadow-sm">Limpiar</a>
+                </div>
+            </div>
+        </form>
         <table class="table table-hover table-striped align-middle mb-0">
+           
             <thead class="table-dark">
                 <tr>
                     <th class="ps-4">DNI / Carnet</th>
@@ -100,10 +135,9 @@
                             <a asp-page="./Editar" asp-route-id="@item.Id" class="btn btn-sm btn-secondary" title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <form method="post" asp-page-handler="Eliminar" asp-route-id="@item.Id" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('¿Estás segure de que querés borrar a este socie? Esta acción no se puede deshacer.');" title="Borrar">
-                                    <i class="bi bi-trash"></i>
+                            <form method="post" asp-page-handler="Delete" asp-route-id="@item.Id" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger shadow-sm" onclick="return confirm('¿Estás seguro de que querés borrar a este socie?');">
+                                    <i class="bi bi-x-circle"></i> Borrar
                                 </button>
                             </form>
                         </td>
@@ -111,5 +145,62 @@
                 }
             </tbody>
         </table>
+       @if (Model.TotalPaginas > 1)
+{
+    // Calculamos el rango de páginas a mostrar (ventana de 5 páginas como máximo)
+    int maxPaginasVisibles = 5;
+    int paginaInicio = Math.Max(1, Model.PaginaActual - 2);
+    int paginaFin = Math.Min(Model.TotalPaginas, paginaInicio + maxPaginasVisibles - 1);
+
+    // Ajuste matemático por si el usuario está en las últimas páginas de la lista
+    paginaInicio = Math.Max(1, paginaFin - maxPaginasVisibles + 1);
+
+    <nav aria-label="Navegación de páginas">
+        <ul class="pagination justify-content-center mt-4 shadow-sm">
+            
+            <!-- Botón Primera (Súper útil para volver rápido) -->
+            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="1" asp-route-Buscar="@Model.Buscar">
+                    <i class="bi bi-chevron-double-left"></i> Primera
+                </a>
+            </li>
+
+            <!-- Botón Anterior -->
+            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual - 1)" asp-route-Buscar="@Model.Buscar">
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </a>
+            </li>
+
+            <!-- Números de página con ventana dinámica -->
+            @for (int i = paginaInicio; i <= paginaFin; i++)
+            {
+                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                    <a class="page-link" asp-route-PaginaActual="@i" asp-route-Buscar="@Model.Buscar">@i</a>
+                </li>
+            }
+
+            <!-- Botón Siguiente -->
+            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual + 1)" asp-route-Buscar="@Model.Buscar">
+                    Siguiente <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            
+            <!-- Botón Última -->
+            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="@Model.TotalPaginas" asp-route-Buscar="@Model.Buscar">
+                    Última <i class="bi bi-chevron-double-right"></i>
+                </a>
+            </li>
+            
+        </ul>
+    </nav>
+    
+    <!-- Muestra informativa opcional para no perderse -->
+    <div class="text-center text-muted small mt-2">
+        Página @Model.PaginaActual de @Model.TotalPaginas
+    </div>
+}
     </div>
 </div>

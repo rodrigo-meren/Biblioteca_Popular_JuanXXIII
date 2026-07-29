@@ -61,7 +61,7 @@ public class EditarModel : PageModel
             }
         }
 
-        return RedirectToPage("./Index");
+        return RedirectToPage("./Inicio");
     }
 
     private bool LibroExists(int id)
