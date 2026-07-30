@@ -12,7 +12,8 @@ using MercadoPago.Client.Preference;
 
 namespace Biblioteca_Popular_JuanXXIII.Pages.MiPerfil
 {
-    
+
+
     [Authorize(Roles = "Socio, Administrador")]
     public class InicioModel : PageModel
     {
@@ -48,6 +49,11 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.MiPerfil
                 .Include(p => p.Libro)
                 .Where(p => p.SocioId == SocioActual.Id && p.FechaDevolucion == null)
                 .OrderBy(p => p.FechaVencimiento)
+                .ToListAsync();
+            MisReservas = await _context.Reservas
+                .Include(r => r.Libro)
+                .Where(r => r.SocioId == SocioActual.Id && (r.Estado == "En Espera" || r.Estado == "Pendiente de retiro"))
+                .OrderBy(r => r.FechaSolicitud)
                 .ToListAsync();
 
             // 4. Traemos sus deudas
@@ -130,5 +136,7 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.MiPerfil
 
             return Redirect(preference.InitPoint);
         }
+        public IList<Reserva> MisReservas { get; set; } = new List<Reserva>();
     }
+
 }

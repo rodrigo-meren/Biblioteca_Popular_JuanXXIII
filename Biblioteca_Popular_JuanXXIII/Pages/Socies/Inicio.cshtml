@@ -1,23 +1,18 @@
 @page "/Socies"
 @model Biblioteca_Popular_JuanXXIII.Pages.Socies.InicioModel
 @{
-    ViewData["Title"] = "Padrón de Socies";
+    ViewData["Title"] = "Padrón de Socios";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="text-institucional-rojo"><i class="bi bi-people-fill me-2"></i>Padrón de Socies</h1>
     <a asp-page="Alta" class="btn btn-primary shadow-sm">
-        <i class="bi bi-person-plus-fill me-1"></i> Nuevx Socie
+        <i class="bi bi-person-plus-fill me-1"></i> Alta Socie
     </a>
-    <form method="post" asp-page-handler="GenerarLote" class="d-inline ms-2">
-            <button type="submit" class="btn btn-warning shadow-sm fw-bold" 
-                    onclick="return confirm('¿Generar el lote de cuotas de este mes para todos los socies?');">
-                <i class="bi bi-magic me-1"></i> Generar Cuotas del Mes
-            </button>
-   </form>
+  
 </div>
 
-<div class="card shadow-sm border-0">
+<!-- <div class="card shadow-sm border-0">
     <div class="card-body p-0 table-responsive">
         <div class="card mb-3 shadow-sm">
             <div class="card-body">
@@ -31,7 +26,7 @@
                     </div>
                 </form>
             </div>
-        </div>
+        </div>-->
         <form method="get" class="mb-4">
             <div class="row g-2 align-items-center">
                 <div class="col-auto">

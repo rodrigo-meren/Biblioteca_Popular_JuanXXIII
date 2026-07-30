@@ -40,10 +40,28 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
             {
                 prestamo.Estado = "Devuelto";
                 prestamo.FechaDevolucion = DateTime.Now;
+                var libro = await _context.Libros.FindAsync(prestamo.LibroId);
 
-                if (prestamo.Libro != null)
+                // 2. Buscamos si hay alguien en cola (En Espera) para este mismo libro.
+                // Usamos OrderBy para darle prioridad al que lo reservó primero.
+                var reservaPendiente = await _context.Reservas
+                    .Where(r => r.LibroId == libro.Id && r.Estado == "En Espera")
+                    .OrderBy(r => r.FechaSolicitud)
+                    .FirstOrDefaultAsync();
+
+                if (reservaPendiente != null)
                 {
-                    prestamo.Libro.Disponible = true;
+                    // ¡Hay alguien esperando! El libro NO vuelve al catálogo público.
+                    libro.Disponible = false;
+
+                    // Le cambiamos el estado a la reserva y le damos 48hs de límite para buscarlo
+                    reservaPendiente.Estado = "Pendiente de retiro";
+                    reservaPendiente.FechaLimiteRetiro = DateTime.Now.AddDays(2);
+                }
+                else
+                {
+                    // Nadie lo reservó, el libro vuelve a la estantería normal
+                    libro.Disponible = true;
                 }
 
                 await _context.SaveChangesAsync();

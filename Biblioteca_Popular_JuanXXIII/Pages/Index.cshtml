@@ -1,78 +1,142 @@
 ﻿@page
-@model Biblioteca_Popular_JuanXXIII.Pages.IndexModel
+@model IndexModel
 @{
     ViewData["Title"] = "Inicio";
 }
 
-<div class="bg-danger text-white rounded-4 shadow-sm p-5 mb-5 mt-3 text-center position-relative overflow-hidden">
-    <div class="position-relative z-index-1">
-        <h1 class="display-4 fw-bold mb-3">Tu mundo en la Juan XXIII</h1>
-        <p class="lead mb-4 fw-light">Libros, cultura, talleres y un espacio de encuentro para toda la comunidad.</p>
-        <div class="d-flex justify-content-center gap-3">
-            <a href="/Libros/Inicio" class="btn btn-light btn-lg text-danger fw-bold shadow-sm px-4">
-                <i class="bi bi-search me-2"></i>Explorar Catálogo
+<!-- SECCIÓN 1: BANNER DE BIENVENIDA -->
+<div class="p-5 mb-5 bg-light rounded-3 shadow-sm border text-center" style="background: linear-gradient(to right, #f8f9fa, #e9ecef);">
+    <div class="container-fluid py-3">
+        <h1 class="display-5 fw-bold text-institucional-rojo"><i class="bi bi-book-half"></i> Biblioteca Popular Juan XXIII</h1>
+        <p class="col-md-8 mx-auto fs-5 text-muted mt-3">
+            Explorá nuestro catálogo, reservá tus próximas lecturas y enterate de todas las novedades de nuestra comunidad.
+        </p>
+        <div class="mt-4">
+            <a asp-page="/Libros/Inicio" class="btn btn-primary btn-lg px-4 shadow-sm fw-bold">
+                <i class="bi bi-search me-2"></i> Explorar Catálogo
             </a>
             @if (!User.Identity.IsAuthenticated)
             {
-                <a href="/Identity/Account/Login" class="btn btn-outline-light btn-lg fw-bold px-4">
-                    <i class="bi bi-person-circle me-2"></i>Mi Cuenta
+                <a href="/Identity/Account/Login" class="btn btn-outline-secondary btn-lg px-4 ms-2 shadow-sm">
+                    Ingresar
                 </a>
             }
         </div>
     </div>
 </div>
 
-<div class="row g-5">
-    <div class="col-lg-8">
-        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-4">
-            <h3 class="fw-bold text-dark mb-0"><i class="bi bi-star-fill text-warning me-2"></i> Recomendados del Mes</h3>
-            <a href="/Catalogo" class="text-danger text-decoration-none small fw-bold">Ver todos</a>
-        </div>
+<div class="row g-5 mb-5">
 
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="card h-100 shadow-sm border-0 bg-light">
-                    <div class="card-body">
-                        <span class="badge bg-danger mb-2">Ficción</span>
-                        <h5 class="fw-bold text-dark">Los árboles caídos también son el bosque</h5>
-                        <p class="text-muted small mb-3">Alejandra Kamiya</p>
-                        <p class="card-text small text-secondary">"Una colección de cuentos magistral donde la naturaleza humana y el entorno se entrelazan de forma poética y profunda..."</p>
-                    </div>
-                </div>
-            </div>
+    <!-- SECCIÓN 2: LIBROS DESTACADOS (Columna izquierda, más ancha) -->
+    <div class="col-md-8">
+        <h3 class="fw-bold mb-4 border-bottom pb-2 text-dark">
+            <i class="bi bi-star-fill text-warning me-2"></i> Recomendaciones del mes
+        </h3>
 
-            <div class="col-md-6">
-                <div class="card h-100 shadow-sm border-0 bg-light">
-                    <div class="card-body">
-                        <span class="badge bg-danger mb-2">Historia</span>
-                        <h5 class="fw-bold text-dark">24 Horas en la vida de una mujer</h5>
-                        <p class="text-muted small mb-3">Stefan Zweig</p>
-                        <p class="card-text small text-secondary">"Un relato atrapante sobre la pasión, la moral y cómo un solo instante puede cambiar el destino para siempre."</p>
+        @if (Model.LibrosDestacados != null && Model.LibrosDestacados.Any())
+        {
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                @foreach (var libro in Model.LibrosDestacados)
+                {
+                    <div class="col">
+                        <div class="card h-100 shadow-sm border-0 bg-light">
+                            <div class="row g-0 h-100">
+                                <div class="col-4 d-flex align-items-center bg-white p-2 text-center rounded-start">
+                                    @if (!string.IsNullOrEmpty(libro.PortadaUrl))
+                                    {
+                                        <!-- 1. Prioridad Máxima: Si cargaron un link a mano, usamos ese -->
+                                        <img src="@libro.PortadaUrl"
+                                             class="img-fluid rounded shadow-sm"
+                                             alt="Portada de @libro.Titulo"
+                                             onerror="this.src='/img/portada-default.png';"
+                                             style="max-height: 350px; object-fit: cover;" />
+                                    }
+                                    else if (!string.IsNullOrEmpty(libro.ISBN))
+                                    {
+                                        <!-- 2. Si no hay link manual pero hay ISBN, usamos Open Library -->
+                                        <img src="https://covers.openlibrary.org/b/isbn/@(libro.ISBN)-L.jpg"
+                                             class="img-fluid rounded shadow-sm"
+                                             alt="Portada de @libro.Titulo"
+                                             onerror="this.src='/img/portada-default.png';"
+                                             style="max-height: 350px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <!-- 3. Si no tiene ni link ni ISBN, mostramos el ícono gris -->
+                                        <div class="text-muted p-4">
+                                            <i class="bi bi-book text-secondary" style="font-size: 4rem;"></i>
+                                            <p class="mt-2">Sin portada disponible</p>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-8">
+                                    <div class="card-body d-flex flex-column h-100 p-3">
+                                        <h6 class="card-title fw-bold text-dark mb-1 lh-sm">@libro.Titulo</h6>
+                                        <small class="text-muted mb-2">@libro.Autor</small>
+
+                                        <div class="mt-auto">
+                                            @if (libro.Disponible)
+                                            {
+                                                <span class="badge bg-success mb-2 d-table">Disponible</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger mb-2 d-table">Prestado</span>
+                                            }
+                                            <a asp-page="/Libros/Detalles" asp-route-id="@libro.Id" class="btn btn-sm btn-outline-primary w-100">
+                                                Ver Detalles
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                }
             </div>
-        </div>
+        }
+        else
+        {
+            <div class="alert alert-secondary text-center p-5 shadow-sm">
+                <i class="bi bi-journal-x fs-1 text-muted d-block mb-3"></i>
+                <h5 class="text-muted">Aún no hay recomendaciones destacadas.</h5>
+                <p class="mb-0">Pronto los bibliotecarios seleccionarán los mejores títulos para vos.</p>
+            </div>
+        }
     </div>
 
-    <div class="col-lg-4">
-        <div class="border-bottom pb-2 mb-4">
-            <h3 class="fw-bold text-dark mb-0"><i class="bi bi-calendar-event text-primary me-2"></i> La Biblio al Día</h3>
-        </div>
+    <!-- SECCIÓN 3: NOTICIAS (Columna derecha) -->
+    <div class="col-md-4">
+        <h3 class="fw-bold mb-4 border-bottom pb-2 text-dark">
+            <i class="bi bi-megaphone-fill text-info me-2"></i> Novedades
+        </h3>
 
-        <div class="card shadow-sm border-0 mb-3 border-start border-primary border-4">
-            <div class="card-body">
-                <p class="text-primary small fw-bold mb-1">VIERNES 15 | 18:00 HS</p>
-                <h6 class="fw-bold">Taller de lectura infantil</h6>
-                <p class="text-muted small mb-0">Traé a los más chicos a disfrutar de una tarde mágica con nuestros cuentacuentos locales. Entrada libre y gratuita.</p>
+        @if (Model.Noticias != null && Model.Noticias.Any())
+        {
+            <div class="d-flex flex-column gap-3">
+                @foreach (var noticia in Model.Noticias)
+                {
+                    <div class="card shadow-sm border-0 border-start border-info border-4">
+                        <div class="card-body p-3">
+                            <small class="text-muted fw-bold d-block mb-1">
+                                <i class="bi bi-calendar-event me-1"></i> @noticia.FechaPublicacion.ToString("dd MMM yyyy")
+                            </small>
+                            <h6 class="fw-bold text-dark mb-2">@noticia.Titulo</h6>
+                            <p class="card-text text-secondary small mb-0" style="white-space: pre-line;">
+                                @noticia.Contenido
+                            </p>
+                        </div>
+                    </div>
+                }
             </div>
-        </div>
-
-        <div class="card shadow-sm border-0 border-start border-success border-4">
-            <div class="card-body">
-                <p class="text-success small fw-bold mb-1">¡NUEVO SERVICIO!</p>
-                <h6 class="fw-bold">Ya podés abonar tu cuota online</h6>
-                <p class="text-muted small mb-0">Entrando a tu panel de autogestión de "Mi Perfil", ya podés consultar tus deudas y abonarlas cómodamente desde tu casa.</p>
+        }
+        else
+        {
+            <div class="card shadow-sm border-0 bg-light text-center p-4">
+                <i class="bi bi-info-circle text-muted fs-2 mb-2"></i>
+                <p class="text-muted mb-0 small">No hay anuncios o novedades en este momento.</p>
             </div>
-        </div>
+        }
     </div>
+
 </div>

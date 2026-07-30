@@ -1,14 +1,16 @@
 using Biblioteca_Popular_JuanXXIII.Data;
 using Biblioteca_Popular_JuanXXIII.Models;
+// Faltaban estas tres para el CSV:
+using CsvHelper;
+using CsvHelper.Configuration;
+using MercadoPago.Resource.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-// Faltaban estas tres para el CSV:
-using CsvHelper;
-using CsvHelper.Configuration;
 using System.Globalization;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace Biblioteca_Popular_JuanXXIII.Pages.Libros;
 
@@ -94,7 +96,7 @@ public class InicioModel : PageModel
             // 1. Evita que explote si encuentra un formato raro
             BadDataFound = null,
 
-           
+
             Quote = '\0'
         };
 
@@ -188,20 +190,112 @@ public class InicioModel : PageModel
         await _context.SaveChangesAsync();
         return RedirectToPage("./Inicio");
     }
-}
-
-// --- 6. CLASE MAPEADORA PARA EL EXCEL (Faltaba) ---
-public class LibroMap : ClassMap<Libro>
-{
-    public LibroMap()
+    public async Task<IActionResult> OnPostReservarAsync(int libroId)
     {
-        Map(m => m.CodigoInventario).Name("Codigo_Inventario").Optional();
-        Map(m => m.Titulo).Name("Titulo").Optional();
-        Map(m => m.Autor).Name("Autor").Optional();
+        // 1. Identificamos al socie que hizo clic
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var socio = await _context.Socios.FirstOrDefaultAsync(s => s.IdentityUserId == userId);
 
-       
-        Map(m => m.ISBN).Name("ISBN", "I SBN").Optional();
+        if (socio == null) return RedirectToPage("/Account/Logout", new { area = "Identity" });
 
-        Map(m => m.Editorial).Name("Editorial").Optional();
+        // 2. Buscamos el libro que quiere reservar
+        var libro = await _context.Libros.FindAsync(libroId);
+        if (libro == null) return NotFound();
+
+        // 3. (Seguridad) Verificamos que no haya reservado este mismo libro antes y siga pendiente
+        var reservaExistente = await _context.Reservas
+            .AnyAsync(r => r.LibroId == libroId && r.SocioId == socio.Id && (r.Estado == "Pendiente de retiro" || r.Estado == "En espera"));
+
+        if (reservaExistente)
+        {
+            TempData["MensajeError"] = "Ya tenés una reserva activa o estás en lista de espera para este libro.";
+            return RedirectToPage();
+        }
+
+        // 4. Creamos la nueva reserva
+        var nuevaReserva = new Reserva
+        {
+            LibroId = libro.Id,
+            SocioId = socio.Id,
+            FechaSolicitud = DateTime.Now
+        };
+
+        if (libro.Disponible) // Evaluamos el booleano
+        {
+            nuevaReserva.Estado = "Pendiente de retiro";
+            nuevaReserva.FechaLimiteRetiro = DateTime.Now.AddHours(48);
+
+            // Lo pasamos a false para que desaparezca de la disponibilidad
+            libro.Disponible = false;
+
+            TempData["MensajeExito"] = $"¡Reserva confirmada! Tenés tiempo hasta el {nuevaReserva.FechaLimiteRetiro.Value.ToString("dd/MM HH:mm")} hs para pasar a retirarlo.";
+        }
+        else
+        {
+            nuevaReserva.Estado = "En espera";
+            nuevaReserva.FechaLimiteRetiro = null;
+
+            TempData["MensajeExito"] = "El libro no está disponible actualmente. Quedaste en la lista de espera y te vamos a avisar cuando lo devuelvan.";
+        }
+
+        _context.Reservas.Add(nuevaReserva);
+        await _context.SaveChangesAsync();
+
+        return RedirectToPage();
+    }
+    public async Task<IActionResult> OnPostAlternarDestacadoAsync(int id)
+    {
+        var libro = await _context.Libros.FindAsync(id);
+
+        if (libro != null)
+        {
+            // Si el libro NO está destacado actualmente (es decir, el usuario quiere destacarlo)
+            if (!libro.EsDestacado)
+            {
+                // Contamos cuántos libros ya tienen estrella
+                int cantidadDestacados = await _context.Libros.CountAsync(l => l.EsDestacado);
+
+                if (cantidadDestacados >= 4)
+                {
+                    // Frenamos la operación y le mandamos un mensaje de error
+                    TempData["MensajeError"] = "Ya tenés 4 libros destacados en la portada. Por favor, quitale la estrella a uno antes de destacar otro.";
+                    return RedirectToPage(); // Cortamos la ejecución acá
+                }
+            }
+
+            // Si pasó la validación (o si estaba quitando una estrella), invertimos el estado
+            libro.EsDestacado = !libro.EsDestacado;
+            await _context.SaveChangesAsync();
+
+            // Mensaje de éxito
+            if (libro.EsDestacado)
+            {
+                TempData["MensajeExito"] = $"El libro '{libro.Titulo}' ahora aparece en la portada.";
+            }
+            else
+            {
+                TempData["MensajeExito"] = $"El libro '{libro.Titulo}' se quitó de las recomendaciones.";
+            }
+        }
+
+        return RedirectToPage();
+    }
+
+    // --- 6. CLASE MAPEADORA PARA EL EXCEL (Faltaba) ---
+    public class LibroMap : ClassMap<Libro>
+    {
+        public LibroMap()
+        {
+            Map(m => m.CodigoInventario).Name("Codigo_Inventario").Optional();
+            Map(m => m.Titulo).Name("Titulo").Optional();
+            Map(m => m.Autor).Name("Autor").Optional();
+
+
+            Map(m => m.ISBN).Name("ISBN", "I SBN").Optional();
+
+            Map(m => m.Editorial).Name("Editorial").Optional();
+        }
+
+
     }
 }

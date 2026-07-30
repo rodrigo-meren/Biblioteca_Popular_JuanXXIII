@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "Detalles del Libro";
 
-    // Pequeña función en C# para traducir los géneros más comunes de Google Books
     string TraducirGenero(string generoIngles)
     {
         if (string.IsNullOrEmpty(generoIngles)) return "No especificado";
@@ -28,7 +27,6 @@
             { "Cooking", "Cocina" }
         };
 
-        // Separamos por comas en caso de que vengan varios (ej: "Fiction, History")
         var generos = generoIngles.Split(',').Select(g => g.Trim());
         var generosTraducidos = generos.Select(g => traducciones.ContainsKey(g) ? traducciones[g] : g);
 
@@ -40,13 +38,21 @@
     <h1 class="text-institucional-rojo">Detalles del Libro</h1>
 </div>
 
-<div class="card shadow-sm border-0">
+<div class="card shadow-sm border-0 mb-4">
     <div class="row g-0">
-        <!-- Columna de la Portada (Izquierda) -->
         <div class="col-md-3 bg-light p-4 border-end d-flex align-items-center justify-content-center text-center">
-            @if (!string.IsNullOrEmpty(Model.Libro.ISBN))
+            @if (!string.IsNullOrEmpty(Model.Libro.PortadaUrl))
             {
-                <!-- Usamos la API de Open Library con el ISBN para cargar la tapa mágicamente -->
+                <!-- 1. Prioridad Máxima: Si cargaron un link a mano, usamos ese -->
+                <img src="@Model.Libro.PortadaUrl"
+                     class="img-fluid rounded shadow-sm"
+                     alt="Portada de @Model.Libro.Titulo"
+                     onerror="this.src='/img/portada-default.png';"
+                     style="max-height: 350px; object-fit: cover;" />
+            }
+            else if (!string.IsNullOrEmpty(Model.Libro.ISBN))
+            {
+                <!-- 2. Si no hay link manual pero hay ISBN, usamos Open Library -->
                 <img src="https://covers.openlibrary.org/b/isbn/@(Model.Libro.ISBN)-L.jpg"
                      class="img-fluid rounded shadow-sm"
                      alt="Portada de @Model.Libro.Titulo"
@@ -55,14 +61,13 @@
             }
             else
             {
+                <!-- 3. Si no tiene ni link ni ISBN, mostramos el ícono gris -->
                 <div class="text-muted p-4">
                     <i class="bi bi-book text-secondary" style="font-size: 4rem;"></i>
                     <p class="mt-2">Sin portada disponible</p>
                 </div>
             }
-        </div>
 
-        <!-- Columna de la Información (Derecha) -->
         <div class="col-md-9">
             <div class="card-body p-4">
                 <h2 class="card-title fw-bold text-dark">@Model.Libro.Titulo</h2>
@@ -90,15 +95,12 @@
                     </div>
                 </div>
 
-                @if (!string.IsNullOrEmpty(Model.Libro.Sinopsis))
-                {
-                    <div class="row mb-3">
-                        <div class="col-sm-3 fw-bold text-secondary">Sinopsis:</div>
-                        <div class="col-sm-9 text-justify" style="text-align: justify;">
-                            @Model.Libro.Sinopsis
-                        </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3 fw-bold text-secondary">Sinopsis:</div>
+                    <div class="col-sm-9 text-justify" style="text-align: justify;">
+                        @(string.IsNullOrWhiteSpace(Model.Libro.Sinopsis) ? "No hay una sinopsis registrada para este ejemplar." : Model.Libro.Sinopsis)
                     </div>
-                }
+                </div>
 
                 <div class="row mb-3">
                     <div class="col-sm-3 fw-bold text-secondary">Estado:</div>
@@ -114,7 +116,6 @@
                     </div>
                 </div>
 
-               
                 @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
                 {
                     <div class="row mt-4 mb-2 bg-warning bg-opacity-10 p-3 rounded border border-warning">
@@ -128,15 +129,123 @@
                 }
             </div>
 
-            <!-- Botones actualizados y alineados a la derecha -->
-            <div class="card-footer bg-white border-0 text-end p-4">
+            <div class="card-footer bg-white border-0 text-end p-4 border-top">
+                @if (User.IsInRole("Socio"))
+                {
+                    <form method="post" asp-page-handler="Reservar" class="d-inline me-2">
+                        <input type="hidden" name="libroId" value="@Model.Libro.Id" />
+                        <button type="submit" class="btn btn-success fw-bold shadow-sm">
+                            <i class="bi bi-bookmark-plus"></i> Reservar Libro
+                        </button>
+                    </form>
+                }
+
                 @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
                 {
-                    <a asp-page="./Editar" asp-route-id="@Model.Libro.Id" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Editar Datos</a>
+                    <a asp-page="./Editar" asp-route-id="@Model.Libro.Id" class="btn btn-primary shadow-sm"><i class="bi bi-pencil-square"></i> Editar Datos</a>
                 }
-                
-                <a asp-page="./Inicio" class="btn btn-outline-secondary ms-2"><i class="bi bi-arrow-left"></i> Volver al Catálogo</a>
+
+                <a asp-page="./Inicio" class="btn btn-outline-secondary ms-2 shadow-sm"><i class="bi bi-arrow-left"></i> Volver al Catálogo</a>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- SECCIÓN DE RESEÑAS DE LA COMUNIDAD         -->
+<!-- ========================================== -->
+<div class="card shadow-sm border-0 rounded-3 mt-4 mb-5" id="seccion-resenas">
+    <div class="card-header bg-white p-3 border-bottom-0">
+        <h4 class="mb-0 fw-bold text-dark"><i class="bi bi-chat-right-quote text-primary me-2"></i> Opiniones de la comunidad</h4>
+    </div>
+    <div class="card-body p-4 bg-light">
+
+        @if (TempData["MensajeExito"] != null)
+        {
+            <div class="alert alert-success shadow-sm">
+                <i class="bi bi-check-circle-fill me-2"></i> @TempData["MensajeExito"]
+            </div>
+        }
+
+        <!-- Formulario para dejar reseña -->
+        @if (User.IsInRole("Socio"))
+        {
+            <div class="bg-white p-4 rounded-3 shadow-sm mb-4 border">
+                <h6 class="fw-bold mb-3">¿Leíste este libro? Dejá tu opinión</h6>
+                <form method="post" asp-page-handler="DejarResena">
+                    <input type="hidden" name="libroId" value="@Model.Libro.Id" />
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Calificación</label>
+                        <select asp-for="NuevaCalificacion" class="form-select form-select-sm w-auto">
+                            <option value="5">⭐⭐⭐⭐⭐ ¡Excelente!</option>
+                            <option value="4">⭐⭐⭐⭐ Muy bueno</option>
+                            <option value="3">⭐⭐⭐ Bueno</option>
+                            <option value="2">⭐⭐ Regular</option>
+                            <option value="1">⭐ No me gustó</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <textarea asp-for="NuevoComentario" class="form-control" rows="3" placeholder="Escribí qué te pareció el libro..." required></textarea>
+                    </div>
+
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary fw-bold px-4">Publicar Reseña</button>
+                    </div>
+                </form>
+            </div>
+        }
+        else if (!User.Identity.IsAuthenticated)
+        {
+            <div class="alert alert-secondary text-center shadow-sm mb-4">
+                <i class="bi bi-info-circle me-1"></i> Tenés que <a href="/Identity/Account/Login" class="fw-bold text-decoration-none">iniciar sesión</a> para dejar una reseña.
+            </div>
+        }
+
+        <!-- Listado de Reseñas -->
+        @if (Model.Resenas != null && Model.Resenas.Any())
+        {
+            <div class="d-flex flex-column gap-3">
+                @foreach (var resena in Model.Resenas)
+                {
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="fw-bold text-dark">
+                                    <i class="bi bi-person-circle text-secondary me-1"></i> @resena.Socio.Nombre @resena.Socio.Apellido
+                                </div>
+                                <div class="text-muted small">
+                                    @resena.FechaPublicacion.ToString("dd/MM/yyyy")
+                                </div>
+                            </div>
+                            <div class="text-warning mb-2" style="font-size: 0.85rem;">
+                                @for (int i = 0; i < resena.Calificacion; i++)
+                                {
+                                    <span>★</span>
+                                }
+                                @for (int i = resena.Calificacion; i < 5; i++)
+                                {
+                                    <span class="text-secondary opacity-25">★</span>
+                                }
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(resena.Comentario))
+                            {
+                                <p class="card-text text-secondary mb-0">@resena.Comentario</p>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-chat-square-text fs-1 d-block mb-3 opacity-25"></i>
+                <h5>Aún no hay reseñas</h5>
+                <p>Sé el primero en compartir qué te pareció este libro.</p>
+            </div>
+        }
     </div>
 </div>

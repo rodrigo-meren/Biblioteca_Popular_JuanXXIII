@@ -34,8 +34,9 @@ namespace Biblioteca_Popular_JuanXXIII.Models
         [MaxLength(5000)]
         public string? Sinopsis { get; set; }
         public string? GeneroLiterario { get; set; }
-
-        // Propiedad booleana súper útil para saber rápido si está en la biblioteca o prestado
         public bool Disponible { get; set; } = true;
+        public bool EsDestacado { get; set; } = false;
+        [Url(ErrorMessage = "Debe ser un enlace válido (empezar con http:// o https://)")]
+        public string? PortadaUrl { get; set; }
     }
 }

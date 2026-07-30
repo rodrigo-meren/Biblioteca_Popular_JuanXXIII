@@ -21,8 +21,9 @@ public class PanelModel : PageModel
     public int TotalLibros { get; set; }
     public int PrestamosActivos { get; set; }
     public int CuotasPendientes { get; set; }
-
-    
+    public IList<Reserva> ReservasActivas { get; set; } = new List<Reserva>();
+    public IList<Resena> UltimasResenas { get; set; } = new List<Resena>();
+    public IList<Prestamo> UltimosPrestamos { get; set; } = default!;
     public IList<Recordatorio> NotasPendientes { get; set; } = default!;
 
     public async Task<IActionResult> OnGetAsync()
@@ -57,6 +58,20 @@ public class PanelModel : PageModel
             .OrderByDescending(r => r.EsUrgente) // Las urgentes van arriba
             .ThenBy(r => r.FechaCreacion)
             .ToListAsync();
+        ReservasActivas = await _context.Reservas
+    .Include(r => r.Libro)
+    .Include(r => r.Socio)
+    .Where(r => r.Estado == "Pendiente de retiro" || r.Estado == "En espera")
+    .OrderBy(r => r.FechaSolicitud)
+    .ToListAsync();
+
+        UltimasResenas = await _context.Resenas
+    .Include(r => r.Socio)
+    .Include(r => r.Libro)
+    .OrderByDescending(r => r.FechaPublicacion)
+    .Take(10) // Solo traemos las 10 más recientes para no saturar el panel
+    .ToListAsync();
+
         return Page();
     }
 
@@ -87,7 +102,19 @@ public class PanelModel : PageModel
         }
         return RedirectToPage();
     }
-    public IList<Prestamo> UltimosPrestamos { get; set; } = default!;
+   
 
-  
+    public async Task<IActionResult> OnPostModerarResenaAsync(int id)
+    {
+        var resena = await _context.Resenas.FindAsync(id);
+
+        if (resena != null)
+        {
+            // Esto funciona como un interruptor de luz. Si es true, lo pasa a false. Si es false, lo pasa a true.
+            resena.Aprobada = !resena.Aprobada;
+            await _context.SaveChangesAsync();
+        }
+
+        return RedirectToPage();
+    }
 }

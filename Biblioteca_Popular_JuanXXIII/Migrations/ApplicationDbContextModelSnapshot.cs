@@ -87,12 +87,18 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
+                    b.Property<bool>("EsDestacado")
+                        .HasColumnType("bit");
+
                     b.Property<string>("GeneroLiterario")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ISBN")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PortadaUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Sinopsis")
                         .HasMaxLength(5000)
@@ -114,6 +120,34 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Libros");
+                });
+
+            modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Noticia", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Contenido")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("FechaPublicacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Noticias");
                 });
 
             modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Recordatorio", b =>

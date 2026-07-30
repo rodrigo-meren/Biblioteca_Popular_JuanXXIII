@@ -1,4 +1,4 @@
-﻿@page 
+﻿@page
 @model Biblioteca_Popular_JuanXXIII.Pages.MiPerfil.InicioModel
 @{
     ViewData["Title"] = "Mi Biblioteca";
@@ -20,7 +20,7 @@
 <div class="row g-4">
     <!-- Columna Izquierda: Lo urgente (Libros) -->
     <div class="col-md-8">
-        
+
         <!-- Libros en Préstamo -->
         <div class="card shadow-sm mb-4 border-primary">
             <div class="card-header bg-primary text-white fw-bold">
@@ -37,7 +37,7 @@
                                 <div>
                                     <h6 class="mb-1 fw-bold">@prestamo.Libro.Titulo</h6>
                                     <small class="text-muted d-block">Autor: @prestamo.Libro.Autor</small>
-                                    
+
                                     @if (estaVencido)
                                     {
                                         <span class="badge bg-danger mt-1">Vencido el @prestamo.FechaVencimiento.ToString("dd/MM/yyyy")</span>
@@ -49,16 +49,20 @@
                                 </div>
                                 <div>
                                     <!-- Si no está vencido, le dejamos pedir prórroga -->
+
+                                    <a asp-page="/Libros/Detalles" asp-route-id="@prestamo.LibroId" asp-fragment="seccion-resenas" class="btn btn-sm btn-outline-warning shadow-sm me-1" title="Dejar una reseña">
+                                        <i class="bi bi-star-fill"></i> Reseñar
+                                    </a>
                                     @if (!estaVencido)
-                                                                        {
-                                    <form method="post" asp-page-handler="SolicitarProrroga" class="d-inline">
-                                        <!-- Enviamos el ID del préstamo oculto -->
-                                        <input type="hidden" name="prestamoId" value="@prestamo.Id" />
-                                        <button type="submit" class="btn btn-sm btn-outline-primary shadow-sm" 
-                                                onclick="return confirm('¿Querés extender el préstamo de este libro por 7 días más?');">
-                                            <i class="bi bi-calendar-plus"></i> Prórroga
-                                        </button>
-                                    </form>
+                                    {
+                                        <form method="post" asp-page-handler="SolicitarProrroga" class="d-inline">
+                                            <!-- Enviamos el ID del préstamo oculto -->
+                                            <input type="hidden" name="prestamoId" value="@prestamo.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-primary shadow-sm"
+                                                    onclick="return confirm('¿Querés extender el préstamo de este libro por 7 días más?');">
+                                                <i class="bi bi-calendar-plus"></i> Prórroga
+                                            </button>
+                                        </form>
                                     }
                                 </div>
                             </li>
@@ -75,12 +79,81 @@
                 </ul>
             </div>
         </div>
+        <!-- SECCIÓN: MIS RESERVAS -->
+        <div class="card shadow-sm border-0 mt-5">
+            <div class="card-header bg-white border-bottom pb-2 pt-3">
+                <h5 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-bookmark-star text-warning me-2"></i> Mis Reservas Activas
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Libro</th>
+                                <th>Fecha de Solicitud</th>
+                                <th>Estado</th>
+                                <th>Límite para retirar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.MisReservas != null && Model.MisReservas.Any())
+                            {
+                                foreach (var reserva in Model.MisReservas)
+                                {
+                                    <tr>
+                                        <td class="fw-bold">@reserva.Libro.Titulo</td>
+                                        <td>@reserva.FechaSolicitud.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            @if (reserva.Estado == "Pendiente de retiro")
+                                            {
+                                                <span class="badge bg-success shadow-sm fs-6">
+                                                    <i class="bi bi-box-seam me-1"></i> ¡Listo para retirar!
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">
+                                                    <i class="bi bi-hourglass-split me-1"></i> En Espera
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (reserva.FechaLimiteRetiro.HasValue)
+                                            {
+                                                <span class="fw-bold text-danger">
+                                                    @reserva.FechaLimiteRetiro.Value.ToString("dd/MM/yyyy HH:mm") hs
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted fst-italic">Avisaremos cuando ingrese</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        <i class="bi bi-bookmark-x fs-3 d-block mb-2 opacity-50"></i>
+                                        No tenés ninguna reserva activa.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
     </div>
 
     <!-- Columna Derecha: Pagos y Recomendaciones -->
     <div class="col-md-4">
-        
+
         <!-- Estado de Cuenta (Cuotas) -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-white fw-bold text-danger border-bottom-0 pb-0">
@@ -90,14 +163,14 @@
                 @if (Model.MisCuotasPendientes != null && Model.MisCuotasPendientes.Any())
                 {
                     decimal deudaTotal = Model.MisCuotasPendientes.Sum(c => c.Monto);
-                    
+
                     <h3 class="fw-bold text-danger mb-0">$@deudaTotal.ToString("0.00")</h3>
                     <p class="text-muted small mb-3">Tenés @Model.MisCuotasPendientes.Count cuota(s) pendiente(s).</p>
                     <form method="post" asp-page-handler="PagarConMercadoPago">
-    <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">
-        <i class="bi bi-credit-card"></i> Pagar con Mercado Pago
-    </button>
-</form>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">
+                            <i class="bi bi-credit-card"></i> Pagar con Mercado Pago
+                        </button>
+                    </form>
                 }
                 else
                 {
