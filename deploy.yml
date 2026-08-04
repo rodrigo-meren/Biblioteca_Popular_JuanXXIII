@@ -1,0 +1,25 @@
+name: Despliegue automatico en DonWeb
+
+# Esto le dice a GitHub que se ejecute cada vez que haya un push a la rama master (o main)
+on:
+  push:
+    branches: [ "master", "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Conectando al servidor y actualizando la app
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        port: ${{ secrets.SERVER_PORT }}
+        # Este script es exactamente lo que harías vos a mano en la consola
+        script: |
+          cd Biblioteca_Popular_JuanXXIII
+          git pull origin master
+          cd Biblioteca_Popular_JuanXXIII
+          docker compose up -d --build

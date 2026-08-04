@@ -1,3 +1,7 @@
 <Solution>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path="deploy.yml" />
+  </Folder>
   <Project Path="Biblioteca_Popular_JuanXXIII/Biblioteca_Popular_JuanXXIII.csproj" />
 </Solution>
