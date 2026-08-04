@@ -88,11 +88,27 @@ public class AltaModel : PageModel
 
                         // 4. GUARDAMOS EN LA TABLA SOCIOS
                         _context.Socios.Add(socio);
-                        await _context.SaveChangesAsync();
+
+                        try
+                        {
+                            await _context.SaveChangesAsync();
+                        }
+                        catch (DbUpdateException dbEx)
+                        {
+                            // Si la base de datos rechaza a este socio específico, lo sacamos del contexto 
+                            // para que no trabe a los siguientes socios de la lista
+                            _context.Entry(socio).State = EntityState.Detached;
+
+                            // Y guardamos el error para mostrarlo en la pantalla
+                            TempData["MensajeError"] = $"Se guardaron algunos, pero hubo un error al guardar el DNI {socio.DniCarnet}. Revisá que los campos obligatorios (como Nombre o Apellido) no estén vacíos en el CSV.";
+
+                            // Cortamos la ejecución para que puedas revisar
+                            return RedirectToPage();
+                        }
                     }
                 }
+                TempData["MensajeExito"] = "¡Importación completada! Los socios están activos y vinculados.";
             }
-            TempData["MensajeExito"] = "¡Importación completada! Los socios están activos y vinculados.";
         }
         catch (Exception ex)
         {
