@@ -57,9 +57,11 @@ namespace Biblioteca_Popular_JuanXXIII
             // =========================================================
             using (var scope = app.Services.CreateScope())
             {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                await dbContext.Database.MigrateAsync(); // <--- ESTA ES LA LÍNEA MÁGICA
+
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-
                 // 1. Crear los roles si no existen
                 string[] roles = { "Administrador", "Bibliotecario", "Socio" };
                 foreach (var rol in roles)
