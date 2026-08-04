@@ -63,7 +63,7 @@ public class LoginModel : PageModel
     {
         [Required(ErrorMessage = "El DNI es obligatorio.")]
         [Display(Name = "DNI")]
-        public string Dni { get; set; } // <--- CAMBIAMOS EMAIL POR DNI
+        public string Dni { get; set; }
 
         [Required(ErrorMessage = "La contraseña es obligatoria.")]
         [DataType(DataType.Password)]
@@ -98,8 +98,12 @@ public class LoginModel : PageModel
 
         if (ModelState.IsValid)
         {
+            // 1. Limpiamos espacios invisibles accidentales por si acaso
+            string dniLimpio = Input.Dni?.Trim() ?? "";
+            string passLimpio = Input.Password?.Trim() ?? "";
 
-            var result = await _signInManager.PasswordSignInAsync(Input.Dni, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(dniLimpio, passLimpio, Input.RememberMe, lockoutOnFailure: false);
+
             if (result.Succeeded)
             {
                 _logger.LogInformation("User logged in.");
@@ -109,24 +113,51 @@ public class LoginModel : PageModel
                 }
                 return LocalRedirect(returnUrl);
             }
+
             if (result.RequiresTwoFactor)
+            {
+                return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
+            }
+
+            if (result.IsLockedOut)
+            {
+                _logger.LogWarning("User account locked out.");
+                return RedirectToPage("./Lockout");
+            }
+            else if (result.IsNotAllowed)
+            {
+                // Esto pasa si Identity requiere que el correo esté confirmado por link
+                ModelState.AddModelError(string.Empty, "DIAGNÓSTICO: Identity bloqueó el acceso (Cuenta no permitida/Falta confirmar email).");
+                return Page();
+            }
+            else
+            {
+                // DIAGNÓSTICO PROFUNDO: Le preguntamos a la base de datos qué pasó realmente
+                var user = await _signInManager.UserManager.FindByNameAsync(dniLimpio);
+
+                if (user == null)
                 {
-                    return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
-                }
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning("User account locked out.");
-                    return RedirectToPage("./Lockout");
+                    ModelState.AddModelError(string.Empty, $"DIAGNÓSTICO: El DNI '{dniLimpio}' NO existe en la base de datos de seguridad.");
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return Page();
+                    // El usuario existe, verifiquemos si la contraseña es el problema
+                    var passCheck = await _signInManager.UserManager.CheckPasswordAsync(user, passLimpio);
+                    if (!passCheck)
+                    {
+                        ModelState.AddModelError(string.Empty, $"DIAGNÓSTICO: DNI encontrado, pero la CONTRASEÑA es incorrecta.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, $"DIAGNÓSTICO: Usuario y clave correctos, pero falló por otra restricción interna.");
+                    }
                 }
+                return Page();
             }
-
-            // If we got this far, something failed, redisplay form
-            return Page();
         }
+
+        // If we got this far, something failed, redisplay form
+        return Page();
     }
+}
 

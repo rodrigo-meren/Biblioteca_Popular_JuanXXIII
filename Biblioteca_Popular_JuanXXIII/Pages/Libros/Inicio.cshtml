@@ -24,37 +24,54 @@
     <h1 class="text-danger">Catálogo de Libros</h1> 
     @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
     {
-        <a asp-page="./Crear" class="btn btn-success fw-bold">
+        <a asp-page="./Alta" class="btn btn-success fw-bold">
             <i class="bi bi-plus-circle me-1"></i> Nuevo Libro
         </a>
     }
 </div>
+<div class="card shadow-sm border-0 mb-4 bg-light">
+    <div class="card-body">
+        <form method="get">
+            <div class="row align-items-end g-3">
 
+                <!-- (Opcional) Buscador por texto si lo querés sumar en el futuro -->
+                <div class="col-md-5">
+                    <label class="form-label text-muted small fw-bold mb-1">Buscar libro o autor</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="BuscarTexto" class="form-control border-start-0" placeholder="Ej: Rayuela..." value="@Model.Request.Query["BuscarTexto"]" />
+                    </div>
+                </div>
+
+                <!-- DropDownList (DDL) Dinámico de Géneros -->
+                <div class="col-md-4">
+                    <label class="form-label text-muted small fw-bold mb-1">Filtrar por Categoría</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-tags text-muted"></i></span>
+                        <select asp-for="FiltroGenero" asp-items="Model.GenerosDisponibles" class="form-select border-start-0">
+                            <option value="">Todos los géneros</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary fw-bold w-100 mb-2">
+                        <i class="bi bi-funnel me-1"></i> Filtrar
+                    </button>
+                    <a asp-page="./Inicio" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="bi bi-eraser me-1"></i> Limpiar filtros
+                    </a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
 
 <div class="table-responsive">
-    @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
-    {
-    <form id="form-sincronizar" method="post" asp-page-handler="SincronizarLote" class="mb-3 d-inline">
-    <button type="submit" class="btn btn-warning shadow-sm fw-bold">
-        <i class="bi bi-arrow-repeat me-1"></i> Sincronizar Portadas (Lote de 10)
-    </button>
-    </form>
-    }
-    <form method="get" class="mb-4">
-    <div class="row g-2 align-items-center">
-        <div class="col-auto">
-            <label class="col-form-label fw-bold">Buscar Libro:</label>
-        </div>
-        <div class="col-md-5">
-            <!-- asp-for="Buscar" conecta este input con tu variable en C# -->
-            <input type="text" class="form-control shadow-sm" asp-for="Buscar" placeholder="Título, Autor o ISBN..." />
-        </div>
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary shadow-sm"><i class="bi bi-search"></i> Buscar</button>
-            <a asp-page="./Inicio" class="btn btn-outline-secondary shadow-sm">Limpiar</a>
-        </div>
-    </div>
-</form>
+   
+  
 @if (TempData["MensajeExito"] != null)
 {
     <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
@@ -73,6 +90,10 @@
         <thead class="table-dark">
             <tr>
                 <th>Inventario</th>
+                @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
+        {
+            <th>Ubicación</th>
+        }
                 <th>Título</th>
                 <th>Autor</th>
                 <th>Disponibilidad</th>
@@ -84,6 +105,11 @@
             {
                 <tr>
                     <td><strong>@item.CodigoInventario</strong></td>
+                    @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
+            {
+               
+                <td>@(string.IsNullOrEmpty(item.UbicacionFisica) ? "-" : item.UbicacionFisica)</td>
+            }
                     <td>@item.Titulo</td>
                     <td>@item.Autor</td>
                     <td>
@@ -97,8 +123,7 @@
         }
                     </td>
                 
-        @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario") || User.IsInRole("Socio"))
-{
+        
     <td>
         <div class="d-flex align-items-center gap-1 flex-wrap">
             
@@ -139,7 +164,7 @@
             
         </div>
     </td>              
-}    
+                        
       
                 </tr>
             }
@@ -160,14 +185,14 @@
             
             <!-- Botón Primera (Súper útil para volver rápido) -->
             <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="1" asp-route-Buscar="@Model.Buscar">
+                <a class="page-link" asp-route-PaginaActual="1" asp-route-Buscar="@Model.BuscarTexto">
                     <i class="bi bi-chevron-double-left"></i> Primera
                 </a>
             </li>
 
             <!-- Botón Anterior -->
             <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual - 1)" asp-route-Buscar="@Model.Buscar">
+                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual - 1)" asp-route-Buscar="@Model.BuscarTexto">
                     <i class="bi bi-chevron-left"></i> Anterior
                 </a>
             </li>
@@ -176,20 +201,20 @@
             @for (int i = paginaInicio; i <= paginaFin; i++)
             {
                 <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                    <a class="page-link" asp-route-PaginaActual="@i" asp-route-Buscar="@Model.Buscar">@i</a>
+                    <a class="page-link" asp-route-PaginaActual="@i" asp-route-Buscar="@Model.BuscarTexto">@i</a>
                 </li>
             }
 
             <!-- Botón Siguiente -->
             <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual + 1)" asp-route-Buscar="@Model.Buscar">
+                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual + 1)" asp-route-Buscar="@Model.BuscarTexto">
                     Siguiente <i class="bi bi-chevron-right"></i>
                 </a>
             </li>
             
             <!-- Botón Última -->
             <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@Model.TotalPaginas" asp-route-Buscar="@Model.Buscar">
+                <a class="page-link" asp-route-PaginaActual="@Model.TotalPaginas" asp-route-Buscar="@Model.BuscarTexto">
                     Última <i class="bi bi-chevron-double-right"></i>
                 </a>
             </li>

@@ -37,8 +37,8 @@ public class PanelModel : PageModel
         TotalLibros = await _context.Libros.CountAsync();
 
         PrestamosActivos = await _context.Prestamos
-            .Where(p => p.Estado == "Vigente" || p.Estado == "Vencido")
-            .CountAsync();
+             .Where(p => p.FechaDevolucion == null)
+             .CountAsync();
 
         CuotasPendientes = await _context.Cuotas
         .Where(c => c.Estado == "Pendiente" || c.Estado == "Vencida")

@@ -1,18 +1,20 @@
-using Biblioteca_Popular_JuanXXIII;
+using Biblioteca_Popular_JuanXXIII.Models;
 using Biblioteca_Popular_JuanXXIII.Data;
+using CsvHelper;
+using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace Biblioteca_Popular_JuanXXIII.Pages.Socies;
 
 public class AltaModel : PageModel
 {
     private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager; // AGREGAMOS ESTO
+    private readonly UserManager<IdentityUser> _userManager;
 
-    // Modificamos el constructor para recibir ambas cosas
     public AltaModel(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
         _context = context;
@@ -27,6 +29,82 @@ public class AltaModel : PageModel
         return Page();
     }
 
+    // ==========================================
+    // MÉTODO 1: IMPORTACIÓN MASIVA DESDE CSV
+    // ==========================================
+    public async Task<IActionResult> OnPostImportarAsync(IFormFile archivoCsv)
+    {
+        if (archivoCsv == null || archivoCsv.Length == 0)
+        {
+            TempData["MensajeError"] = "Por favor, seleccioná un archivo CSV válido.";
+            return RedirectToPage();
+        }
+
+        var config = new CsvConfiguration(new CultureInfo("es-AR"))
+        {
+            Delimiter = ";",
+            HasHeaderRecord = true
+        };
+
+        try
+        {
+            using (var stream = new StreamReader(archivoCsv.OpenReadStream()))
+            using (var csv = new CsvReader(stream, config))
+            {
+                csv.Context.RegisterClassMap<SocioMap>();
+                var records = csv.GetRecords<Socio>().ToList();
+
+                foreach (var socio in records)
+                {
+                    // 1. FORZAMOS EL SOCIO COMO ACTIVO
+                    socio.Activo = true;
+
+                    var existeSocio = await _context.Socios.AnyAsync(s => s.DniCarnet == socio.DniCarnet);
+
+                    if (!existeSocio)
+                    {
+                        var stringDni = socio.DniCarnet.ToString();
+
+                        // Generamos un correo alternativo si el CSV viene con el campo vacío
+                        string correoIdentity = string.IsNullOrEmpty(socio.Correo) ? $"{stringDni}@biblioteca.local" : socio.Correo;
+
+                        // 2. CREAMOS LA CUENTA DE IDENTITY PRIMERO
+                        var nuevoUsuario = new IdentityUser
+                        {
+                            UserName = stringDni,
+                            Email = correoIdentity,
+                            EmailConfirmed = true
+                        };
+
+                        var resultado = await _userManager.CreateAsync(nuevoUsuario, stringDni);
+
+                        if (resultado.Succeeded)
+                        {
+                            await _userManager.AddToRoleAsync(nuevoUsuario, "Socio");
+
+                            // 3. VINCULAMOS EL ID AL SOCIO FÍSICO
+                            socio.IdentityUserId = nuevoUsuario.Id;
+                        }
+
+                        // 4. GUARDAMOS EN LA TABLA SOCIOS
+                        _context.Socios.Add(socio);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+            TempData["MensajeExito"] = "¡Importación completada! Los socios están activos y vinculados.";
+        }
+        catch (Exception ex)
+        {
+            TempData["MensajeError"] = $"Error al procesar el archivo: {ex.Message}";
+        }
+
+        return RedirectToPage();
+    }
+
+    // ==========================================
+    // MÉTODO 2: ALTA MANUAL DE UN SOLO SOCIO
+    // ==========================================
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
@@ -34,24 +112,35 @@ public class AltaModel : PageModel
             return Page();
         }
 
-        // 1. Guardamos el socio físico en tu tabla normal
-        _context.Socios.Add(Socio);
-        await _context.SaveChangesAsync();
+        // 1. FORZAMOS EL ESTADO ACTIVO
+        Socio.Activo = true;
 
-        // 2. Creamos su cuenta digital automáticamente
-        // Usamos el DNI convertido a texto para el usuario
         var stringDni = Socio.DniCarnet.ToString();
-        var nuevoUsuario = new IdentityUser { UserName = stringDni };
+        string correoIdentity = string.IsNullOrEmpty(Socio.Correo) ? $"{stringDni}@biblioteca.local" : Socio.Correo;
 
-        // Creamos la cuenta pasando el usuario y la contraseña (que también es el DNI)
+        // 2. CREAMOS LA CUENTA DIGITAL PRIMERO
+        var nuevoUsuario = new IdentityUser
+        {
+            UserName = stringDni,
+            Email = correoIdentity,
+            EmailConfirmed = true
+        };
+
         var resultadoIdentity = await _userManager.CreateAsync(nuevoUsuario, stringDni);
 
         if (resultadoIdentity.Succeeded)
         {
-            // 3. Si se creó bien, le damos el rol de "Socio" para que los candados funcionen
             await _userManager.AddToRoleAsync(nuevoUsuario, "Socio");
+
+            // 3. VINCULAMOS EL ID DE LA CUENTA A LA FICHA DEL SOCIO
+            Socio.IdentityUserId = nuevoUsuario.Id;
         }
 
+        // 4. GUARDAMOS EL SOCIO EN LA BD
+        _context.Socios.Add(Socio);
+        await _context.SaveChangesAsync();
+
+        TempData["MensajeExito"] = "Socio registrado y cuenta creada con éxito.";
         return RedirectToPage("./Inicio");
     }
 }

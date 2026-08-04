@@ -1,7 +1,9 @@
+using System.IO;
+using System.Text;
 using Biblioteca_Popular_JuanXXIII.Data;
+using Biblioteca_Popular_JuanXXIII.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Biblioteca_Popular_JuanXXIII
 {
@@ -16,14 +18,12 @@ namespace Biblioteca_Popular_JuanXXIII
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-          
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
-            // --------------------------------------
+     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options => {
+            builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+            {
                 options.SignIn.RequireConfirmedAccount = false;
-              
                 options.Password.RequireDigit = true; // Exige números (El DNI los tiene)
                 options.Password.RequiredLength = 6;  // Mínimo 6 caracteres
                 options.Password.RequireNonAlphanumeric = false; // No pide símbolos (!, @, #)
@@ -52,14 +52,16 @@ namespace Biblioteca_Popular_JuanXXIII
 
             app.MapRazorPages();
 
-            // --- INICIALIZACIÓN DE ROLES Y ADMINISTRADOR ---
+            // =========================================================
+            // --- INICIALIZACIÓN DE ROLES, ADMIN Y IMPORTACIÓN CSV ---
+            // =========================================================
             using (var scope = app.Services.CreateScope())
             {
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
+                // 1. Crear los roles si no existen
                 string[] roles = { "Administrador", "Bibliotecario", "Socio" };
-
                 foreach (var rol in roles)
                 {
                     if (!await roleManager.RoleExistsAsync(rol))
@@ -68,19 +70,34 @@ namespace Biblioteca_Popular_JuanXXIII
                     }
                 }
 
-                // CORONAR A TU USUARIO COMO ADMINISTRADOR
-                var adminUser = await userManager.FindByNameAsync("34888336");
+                // 2. Crear Administrador por defecto si no existe
+                string adminDni = "34888336";
+                var adminUser = await userManager.FindByNameAsync(adminDni);
 
-                if (adminUser != null)
+                if (adminUser == null)
                 {
-                    if (!await userManager.IsInRoleAsync(adminUser, "Administrador"))
+                    adminUser = new IdentityUser
+                    {
+                        UserName = adminDni,
+                        Email = "admin@bibliotecajuanxxiii.com.ar",
+                        EmailConfirmed = true
+                    };
+
+                    var result = await userManager.CreateAsync(adminUser, "Admin34888336");
+                    if (result.Succeeded)
                     {
                         await userManager.AddToRoleAsync(adminUser, "Administrador");
                     }
                 }
+
+
             }
 
             app.Run();
         }
     }
 }
+
+       
+        
+    

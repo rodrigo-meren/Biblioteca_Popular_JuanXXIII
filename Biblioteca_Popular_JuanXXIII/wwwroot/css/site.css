@@ -35,20 +35,9 @@
         box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
     }
 
-/* Ajuste general para que el footer se quede siempre abajo */
-html {
-    position: relative;
-    min-height: 100%;
-}
 
-body {
-    margin-bottom: 60px;
-    background-color: #f8f9fa; /* Fondo apenas gris para que resalten las tablas blancas */
 }
-
-.footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 60px;
+.hover-text-white:hover {
+    color: #ffffff !important;
+    transition: color 0.3s ease;
 }

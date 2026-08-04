@@ -4,20 +4,54 @@
     ViewData["Title"] = "Inicio";
 }
 
-<!-- SECCIÓN 1: BANNER DE BIENVENIDA -->
-<div class="p-5 mb-5 bg-light rounded-3 shadow-sm border text-center" style="background: linear-gradient(to right, #f8f9fa, #e9ecef);">
-    <div class="container-fluid py-3">
-        <h1 class="display-5 fw-bold text-institucional-rojo"><i class="bi bi-book-half"></i> Biblioteca Popular Juan XXIII</h1>
-        <p class="col-md-8 mx-auto fs-5 text-muted mt-3">
-            Explorá nuestro catálogo, reservá tus próximas lecturas y enterate de todas las novedades de nuestra comunidad.
+<!-- Pequeños estilos para toques modernos (Hover en las tarjetas) -->
+<style>
+    .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .hover-lift:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        }
+
+    .book-cover-container {
+        height: 240px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .book-cover {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+    }
+</style>
+
+<!-- SECCIÓN 1: BANNER HERO MINIMALISTA -->
+<div class="position-relative overflow-hidden p-4 p-md-5 mb-5 bg-white border shadow-sm rounded-4 text-center">
+    <div class="col-md-8 mx-auto my-4">
+        <img src="~/img/logo-biblioteca.jpg" alt="Logo Biblioteca Juan XXIII" class="rounded-circle shadow-sm mb-4" style="height: 100px; width: 100px; object-fit: cover; border: 4px solid white;" />
+
+        <h1 class="display-5 fw-bolder text-dark mb-3" style="letter-spacing: -1px;">
+            Biblioteca Popular Juan XXIII
+        </h1>
+        <p class="lead fw-normal text-muted mb-4 px-lg-5">
+            Un espacio dedicado a la cultura, la lectura y la comunidad. Explorá nuestro catálogo y descubrí tu próxima gran historia.
         </p>
-        <div class="mt-4">
-            <a asp-page="/Libros/Inicio" class="btn btn-primary btn-lg px-4 shadow-sm fw-bold">
-                <i class="bi bi-search me-2"></i> Explorar Catálogo
+
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-page="/Libros/Inicio" class="btn btn-dark btn-lg px-4 rounded-pill fw-medium shadow-sm">
+                Explorar Catálogo
             </a>
             @if (!User.Identity.IsAuthenticated)
             {
-                <a href="/Identity/Account/Login" class="btn btn-outline-secondary btn-lg px-4 ms-2 shadow-sm">
+                <a href="/Identity/Account/Login" class="btn btn-outline-dark btn-lg px-4 rounded-pill fw-medium">
                     Ingresar
                 </a>
             }
@@ -25,104 +59,27 @@
     </div>
 </div>
 
-<div class="row g-5 mb-5">
+<!-- SECCIÓN 2: NOVEDADES Y DONACIONES -->
+<div class="row g-4 mb-5">
 
-    <!-- SECCIÓN 2: LIBROS DESTACADOS (Columna izquierda, más ancha) -->
-    <div class="col-md-8">
-        <h3 class="fw-bold mb-4 border-bottom pb-2 text-dark">
-            <i class="bi bi-star-fill text-warning me-2"></i> Recomendaciones del mes
-        </h3>
-
-        @if (Model.LibrosDestacados != null && Model.LibrosDestacados.Any())
-        {
-            <div class="row row-cols-1 row-cols-md-2 g-4">
-                @foreach (var libro in Model.LibrosDestacados)
-                {
-                    <div class="col">
-                        <div class="card h-100 shadow-sm border-0 bg-light">
-                            <div class="row g-0 h-100">
-                                <div class="col-4 d-flex align-items-center bg-white p-2 text-center rounded-start">
-                                    @if (!string.IsNullOrEmpty(libro.PortadaUrl))
-                                    {
-                                        <!-- 1. Prioridad Máxima: Si cargaron un link a mano, usamos ese -->
-                                        <img src="@libro.PortadaUrl"
-                                             class="img-fluid rounded shadow-sm"
-                                             alt="Portada de @libro.Titulo"
-                                             onerror="this.src='/img/portada-default.png';"
-                                             style="max-height: 350px; object-fit: cover;" />
-                                    }
-                                    else if (!string.IsNullOrEmpty(libro.ISBN))
-                                    {
-                                        <!-- 2. Si no hay link manual pero hay ISBN, usamos Open Library -->
-                                        <img src="https://covers.openlibrary.org/b/isbn/@(libro.ISBN)-L.jpg"
-                                             class="img-fluid rounded shadow-sm"
-                                             alt="Portada de @libro.Titulo"
-                                             onerror="this.src='/img/portada-default.png';"
-                                             style="max-height: 350px; object-fit: cover;" />
-                                    }
-                                    else
-                                    {
-                                        <!-- 3. Si no tiene ni link ni ISBN, mostramos el ícono gris -->
-                                        <div class="text-muted p-4">
-                                            <i class="bi bi-book text-secondary" style="font-size: 4rem;"></i>
-                                            <p class="mt-2">Sin portada disponible</p>
-                                        </div>
-                                    }
-                                </div>
-                                <div class="col-8">
-                                    <div class="card-body d-flex flex-column h-100 p-3">
-                                        <h6 class="card-title fw-bold text-dark mb-1 lh-sm">@libro.Titulo</h6>
-                                        <small class="text-muted mb-2">@libro.Autor</small>
-
-                                        <div class="mt-auto">
-                                            @if (libro.Disponible)
-                                            {
-                                                <span class="badge bg-success mb-2 d-table">Disponible</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-danger mb-2 d-table">Prestado</span>
-                                            }
-                                            <a asp-page="/Libros/Detalles" asp-route-id="@libro.Id" class="btn btn-sm btn-outline-primary w-100">
-                                                Ver Detalles
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <div class="alert alert-secondary text-center p-5 shadow-sm">
-                <i class="bi bi-journal-x fs-1 text-muted d-block mb-3"></i>
-                <h5 class="text-muted">Aún no hay recomendaciones destacadas.</h5>
-                <p class="mb-0">Pronto los bibliotecarios seleccionarán los mejores títulos para vos.</p>
-            </div>
-        }
-    </div>
-
-    <!-- SECCIÓN 3: NOTICIAS (Columna derecha) -->
-    <div class="col-md-4">
-        <h3 class="fw-bold mb-4 border-bottom pb-2 text-dark">
-            <i class="bi bi-megaphone-fill text-info me-2"></i> Novedades
-        </h3>
+    <!-- COLUMNA IZQUIERDA: NOTICIAS (Estilo Timeline Limpio) -->
+    <div class="col-lg-7">
+        <div class="d-flex align-items-center mb-4">
+            <h4 class="fw-bold mb-0 text-dark">Últimas Novedades</h4>
+        </div>
 
         @if (Model.Noticias != null && Model.Noticias.Any())
         {
             <div class="d-flex flex-column gap-3">
                 @foreach (var noticia in Model.Noticias)
                 {
-                    <div class="card shadow-sm border-0 border-start border-info border-4">
-                        <div class="card-body p-3">
-                            <small class="text-muted fw-bold d-block mb-1">
-                                <i class="bi bi-calendar-event me-1"></i> @noticia.FechaPublicacion.ToString("dd MMM yyyy")
-                            </small>
-                            <h6 class="fw-bold text-dark mb-2">@noticia.Titulo</h6>
-                            <p class="card-text text-secondary small mb-0" style="white-space: pre-line;">
+                    <div class="card border-0 shadow-sm rounded-4 bg-white">
+                        <div class="card-body p-4">
+                            <span class="badge bg-light text-secondary mb-2 px-2 py-1 border">
+                                @noticia.FechaPublicacion.ToString("dd MMM yyyy")
+                            </span>
+                            <h5 class="fw-bold text-dark mb-2">@noticia.Titulo</h5>
+                            <p class="text-muted mb-0" style="white-space: pre-line; font-size: 0.95rem;">
                                 @noticia.Contenido
                             </p>
                         </div>
@@ -132,11 +89,102 @@
         }
         else
         {
-            <div class="card shadow-sm border-0 bg-light text-center p-4">
-                <i class="bi bi-info-circle text-muted fs-2 mb-2"></i>
-                <p class="text-muted mb-0 small">No hay anuncios o novedades en este momento.</p>
+            <div class="card border-0 shadow-sm rounded-4 bg-light text-center p-5 h-100">
+                <p class="text-muted mb-0 fw-medium">No hay anuncios recientes.</p>
             </div>
         }
     </div>
 
+    <!-- COLUMNA DERECHA: MERCADO PAGO (Estilo Tarjeta Premium) -->
+    <div class="col-lg-5">
+        <div class="card border-0 rounded-4 shadow-sm h-100" style="background-color: #1a1a1a; color: white;">
+            <div class="card-body p-5 d-flex flex-column justify-content-center text-center">
+                <span class="text-uppercase tracking-wide small fw-bold text-white-50 mb-2">Comunidad</span>
+                <h3 class="fw-bold mb-3">Ayudanos a seguir creciendo</h3>
+                <p class="text-white-50 mb-4 lh-base" style="font-size: 0.95rem;">
+                    Tu aporte voluntario mantiene vivas nuestras estanterías. Todo suma para incorporar nuevos títulos, mejorar las instalaciones y organizar más actividades.
+                </p>
+                <!-- Reemplazar el "#" por el link real de Mercado Pago -->
+                <a href="#" target="_blank" class="btn btn-light rounded-pill fw-bold py-2 mt-auto text-dark" style="transition: all 0.2s;">
+                    Colaborar vía Mercado Pago
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN 3: LIBROS DESTACADOS (Tarjetas Verticales) -->
+<div class="mb-5">
+    <div class="d-flex justify-content-between align-items-end mb-4 border-bottom pb-3">
+        <h4 class="fw-bold text-dark mb-0">Recomendaciones del mes</h4>
+        <a asp-page="/Libros/Inicio" class="text-decoration-none text-muted fw-medium small">
+            Ver todo el catálogo &rarr;
+        </a>
+    </div>
+
+    @if (Model.LibrosDestacados != null && Model.LibrosDestacados.Any())
+    {
+        <!-- row-cols-2 en celulares, 3 en tablets, 4 en PC -->
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var libro in Model.LibrosDestacados)
+            {
+                <div class="col">
+                    <!-- Agregamos la clase hover-lift que definimos en el CSS de arriba -->
+                    <div class="card h-100 border-0 shadow-sm rounded-4 bg-white hover-lift p-3 text-center d-flex flex-column">
+
+                        <!-- Contenedor de la Portada -->
+                        <div class="book-cover-container">
+                            @if (!string.IsNullOrEmpty(libro.PortadaUrl))
+                            {
+                                <img src="@libro.PortadaUrl"
+                                     class="book-cover shadow-sm rounded"
+                                     alt="Portada de @libro.Titulo"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/200x300/f8f9fa/a3a8ad?text=Sin+Tapa';" />
+                            }
+                            else if (!string.IsNullOrEmpty(libro.ISBN))
+                            {
+                                <img src="https://covers.openlibrary.org/b/isbn/@(libro.ISBN.Replace("-", ""))-L.jpg?default=false"
+                                     class="book-cover shadow-sm rounded"
+                                     alt="Portada de @libro.Titulo"
+                                     onerror="this.onerror=null; this.src='https://placehold.co/200x300/f8f9fa/a3a8ad?text=Sin+Tapa';" />
+                            }
+                            else
+                            {
+                                <div class="text-muted d-flex flex-column justify-content-center align-items-center h-100">
+                                    <span class="text-uppercase small fw-bold text-black-50">Sin Tapa</span>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Info del Libro -->
+                        <h6 class="card-title fw-bold text-dark mb-1 text-truncate" title="@libro.Titulo">@libro.Titulo</h6>
+                        <small class="text-muted text-truncate d-block mb-3" title="@libro.Autor">@libro.Autor</small>
+
+                        <!-- Botones y Estado (Empujados al fondo) -->
+                        <div class="mt-auto">
+                            @if (libro.Disponible)
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success-subtle mb-2 px-2 py-1 w-100 rounded-pill">Disponible</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle mb-2 px-2 py-1 w-100 rounded-pill">Prestado</span>
+                            }
+
+                            <a asp-page="/Libros/Detalles" asp-route-id="@libro.Id" class="btn btn-sm btn-light w-100 fw-medium rounded-pill border">
+                                Ver Detalles
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm rounded-4 text-center p-5 bg-light">
+            <h5 class="text-dark fw-bold mb-2">Catálogo en preparación</h5>
+            <p class="text-muted mb-0">Pronto los bibliotecarios seleccionarán los mejores títulos para vos.</p>
+        </div>
+    }
 </div>

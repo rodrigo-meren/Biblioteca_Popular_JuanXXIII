@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -12,15 +14,15 @@
     <!-- Tus estilos personalizados -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100 bg-light">
     <header>
         <!-- Barra de Navegación con el Rojo Institucional -->
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-institucional-rojo border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-institucional-rojo border-bottom box-shadow mb-4 py-3">
             <div class="container">
                 <a class="navbar-brand fw-bold d-flex align-items-center" asp-area="" asp-page="/Index">
                     <!-- El logo con altura fija para que no deforme la barra -->
                     <img src="~/img/logo-biblioteca.jpg" alt="Logo Biblioteca Juan XXIII" class="rounded-circle me-2" style="height: 45px; width: 45px; object-fit: cover; background-color: white;" />
-                    <span>Juan XXIII</span>
+                    <span>BIBLIOTECA POPULAR Juan XXIII</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +34,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-white fw-bold" asp-page="/Index">Inicio</a>
                         </li>
+                        
                         <li class="nav-item">
                             <a class="nav-link text-white fw-bold" asp-page="/Libros/Inicio">Catálogo de Libros</a>
                         </li>
@@ -63,9 +66,6 @@
                         }
                     </ul>
                     <partial name="_LoginPartial" />
-
-                </div>
-            </div>
                 </div>
             </div>
         </nav>
@@ -78,11 +78,84 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted bg-light mt-5">
-        <div class="container py-3 text-center">
-            &copy; @DateTime.Now.Year - Biblioteca Popular Juan XXIII - Pilmayquen
+<!-- FOOTER INSTITUCIONAL -->
+<footer class="bg-dark text-light pt-5 pb-3 mt-auto shadow-lg">
+    <div class="container">
+        <div class="row gy-4">
+
+            <!-- Columna 1: Presentación -->
+            <div class="col-lg-4 col-md-6">
+                <h5 class="text-uppercase fw-bold text-white mb-3">
+                    <img src="~/img/logo-biblioteca.jpg" alt="Logo Biblioteca Juan XXIII" class="rounded-circle me-2" style="height: 45px; width: 45px; object-fit: cover; background-color: white;" />Biblioteca Popular Juan XXIII
+                </h5>
+                <p class="text-white-50 small" style="text-align: justify;">
+                    Un espacio dedicado a la cultura, la lectura y la comunidad. Fomentando el acceso libre al conocimiento y resguardando nuestro patrimonio literario.
+                </p>
+            </div>
+
+            <!-- Columna 2: Enlaces Rápidos -->
+            <div class="col-lg-2 col-md-6">
+                <h5 class="text-uppercase fw-bold text-white mb-3">Enlaces</h5>
+                <ul class="list-unstyled text-white-50 small">
+                    <li class="mb-2"><a asp-page="/Index" class="text-white-50 text-decoration-none hover-text-white"><i class="bi bi-chevron-right me-1 small"></i> Inicio</a></li>
+                    <li class="mb-2"><a asp-page="/Libros/Inicio" class="text-white-50 text-decoration-none hover-text-white"><i class="bi bi-chevron-right me-1 small"></i> Catálogo</a></li>
+                        <li class="mb-2"><a  href="https://bibliotecapopularsc.org.ar" class="text-white-50 text-decoration-none hover-text-white"><i class="bi bi-chevron-right me-1 small"></i> Institucional</a></li>
+                        
+                </ul>
+            </div>
+
+            <!-- Columna 3: Medios de Contacto -->
+            <div class="col-lg-3 col-md-6">
+                <h5 class="text-uppercase fw-bold text-white mb-3">Contacto</h5>
+                <ul class="list-unstyled text-white-50 small">
+                    <li class="mb-3 d-flex">
+                        <i class="bi bi-geo-alt fs-5 me-2 text-danger"></i>
+                        <span> Av Naval y Calle 29,<br />San Clemente del Tuyú</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-center">
+                        <i class="bi bi-telephone fs-5 me-2 text-primary"></i>
+                        <span>2252447866</span>
+                    </li>
+                    <li class="mb-3 d-flex align-items-center">
+                        <i class="bi bi-envelope fs-5 me-2 text-warning"></i>
+                        <span>Bibpopjuanxxiii@gmail.com </span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Columna 4: Redes Sociales -->
+            <div class="col-lg-3 col-md-6">
+                <h5 class="text-uppercase fw-bold text-white mb-3">Comunidad</h5>
+                <p class="text-white-50 small mb-3">Seguinos en nuestras redes para enterarte de talleres y novedades:</p>
+                <div class="d-flex gap-3">
+                    <!-- Cambiá el "#" por los links reales de la biblioteca -->
+                    <a href="https://www.facebook.com/Bibliotecajuanveintitres/" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;" title="Facebook">
+                        <i class="bi bi-facebook"></i>
+                    </a>
+                    <a href="https://www.instagram.com/bibliotecajuanxxiii/" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;" title="Instagram">
+                        <i class="bi bi-instagram"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send/?phone=542252447866&text&type=phone_number&app_absent=0" class="btn btn-outline-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;" title="WhatsApp">
+                        <i class="bi bi-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+
         </div>
-    </footer>
+
+        <hr class="border-secondary mt-4 mb-3 opacity-25">
+
+        <!-- Fila de Copyright -->
+        <div class="row align-items-center small text-white-50">
+            <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+                &copy; @DateTime.Now.Year - Biblioteca Popular Juan XXIII. Todos los derechos reservados.
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                Desarrollado para la comunidad por RM-CODE.
+            </div>
+        </div>
+    </div>
+</footer>
 
     <!-- Scripts Base -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

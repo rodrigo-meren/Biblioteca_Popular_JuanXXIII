@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
-
+using Microsoft.AspNetCore.Mvc.Rendering;
 namespace Biblioteca_Popular_JuanXXIII.Pages.Libros;
 
 [AllowAnonymous]
@@ -24,12 +24,14 @@ public class InicioModel : PageModel
         _context = context;
     }
 
-    // 1. La única lista que necesitamos es la de Libros
+    [BindProperty(SupportsGet = true)]
+    public string FiltroGenero { get; set; }
+    public SelectList GenerosDisponibles { get; set; }
     public IList<Libro> Libro { get; set; } = default!;
 
     // --- PROPIEDADES PARA BUSCAR Y PAGINAR ---
     [BindProperty(SupportsGet = true)]
-    public string Buscar { get; set; }
+    public string BuscarTexto { get; set; }
 
     [BindProperty(SupportsGet = true)]
     public int PaginaActual { get; set; } = 1;
@@ -58,23 +60,42 @@ public class InicioModel : PageModel
     // --- 2. MÉTODO PRINCIPAL (ON GET) UNIFICADO ---
     public async Task OnGetAsync()
     {
+        // A. Consultamos todos los géneros únicos que existen para llenar el DDL
+        var generos = await _context.Libros
+            .Select(l => l.GeneroLiterario)
+            .Distinct()
+            .ToListAsync();
+
+        // Limpiamos los vacíos y ordenamos alfabéticamente
+        generos.RemoveAll(string.IsNullOrWhiteSpace);
+        GenerosDisponibles = new SelectList(generos.OrderBy(g => g));
+
+        // B. Empezamos a armar la consulta base de libros
         IQueryable<Libro> consulta = _context.Libros;
 
-        if (!string.IsNullOrEmpty(Buscar))
+        // C. Filtro 1: Buscador de texto
+        if (!string.IsNullOrEmpty(BuscarTexto))
         {
-            consulta = consulta.Where(l => l.Titulo.Contains(Buscar) ||
-                                           l.Autor.Contains(Buscar) ||
-                                           l.GeneroLiterario.Contains(Buscar) ||
-                                           l.ISBN.Contains(Buscar));
+            consulta = consulta.Where(l => l.Titulo.Contains(BuscarTexto) ||
+                                           l.Autor.Contains(BuscarTexto) ||
+                                           l.GeneroLiterario.Contains(BuscarTexto) ||
+                                           l.ISBN.Contains(BuscarTexto));
         }
 
+        // D. Filtro 2: Menú desplegable de Género
+        if (!string.IsNullOrEmpty(FiltroGenero))
+        {
+            consulta = consulta.Where(l => l.GeneroLiterario == FiltroGenero);
+        }
+
+        // E. Paginación Matemática
         var cantidadTotal = await consulta.CountAsync();
         TotalPaginas = (int)Math.Ceiling(cantidadTotal / (double)RegistrosPorPagina);
 
         if (PaginaActual < 1) PaginaActual = 1;
         if (PaginaActual > TotalPaginas && TotalPaginas > 0) PaginaActual = TotalPaginas;
 
-        // Guardamos en "Libro" y ordenamos por "Titulo" (no por apellido)
+        // F. Guardamos en "Libro" y ejecutamos la consulta a la base de datos
         Libro = await consulta
             .OrderBy(l => l.Titulo)
             .Skip((PaginaActual - 1) * RegistrosPorPagina)
@@ -255,10 +276,10 @@ public class InicioModel : PageModel
                 // Contamos cuántos libros ya tienen estrella
                 int cantidadDestacados = await _context.Libros.CountAsync(l => l.EsDestacado);
 
-                if (cantidadDestacados >= 4)
+                if (cantidadDestacados >= 12)
                 {
                     // Frenamos la operación y le mandamos un mensaje de error
-                    TempData["MensajeError"] = "Ya tenés 4 libros destacados en la portada. Por favor, quitale la estrella a uno antes de destacar otro.";
+                    TempData["MensajeError"] = "Ya tenés 12 libros destacados en la portada. Por favor, quitale la estrella a uno antes de destacar otro.";
                     return RedirectToPage(); // Cortamos la ejecución acá
                 }
             }
@@ -280,6 +301,7 @@ public class InicioModel : PageModel
 
         return RedirectToPage();
     }
+    
 
     // --- 6. CLASE MAPEADORA PARA EL EXCEL (Faltaba) ---
     public class LibroMap : ClassMap<Libro>

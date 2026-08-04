@@ -23,7 +23,7 @@ namespace Biblioteca_Popular_JuanXXIII.Pages
             // 1. Buscamos hasta 4 libros que estén marcados como destacados
             LibrosDestacados = await _context.Libros
                 .Where(l => l.EsDestacado)
-                .Take(4)
+                .Take(12)
                 .ToListAsync();
 
             // 2. Buscamos las últimas 3 noticias activas, de la más nueva a la más vieja

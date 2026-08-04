@@ -8,6 +8,38 @@
     <h2 class="text-institucional-rojo"><i class="bi bi-pencil-square me-2"></i>Editar: @Model.Socio.Nombre @Model.Socio.Apellido</h2>
 </div>
 <hr />
+@if (TempData["MensajeExito"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm my-3" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["MensajeExito"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["MensajeError"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm my-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["MensajeError"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<!-- SECCIÓN REGENERAR CONTRASEÑA -->
+<div class="card border-warning shadow-sm mt-4">
+    <div class="card-header bg-warning bg-opacity-10 fw-bold text-dark">
+        <i class="bi bi-key-fill text-warning me-2"></i> Gestión de Credenciales
+    </div>
+    <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <p class="mb-0 fw-bold">Restablecer acceso al sistema</p>
+            <small class="text-muted">Si el socio no puede ingresar, este botón regenerará su contraseña asignándole nuevamente su DNI.</small>
+        </div>
+        <form method="post" asp-page-handler="RegenerarPassword" asp-route-id="@Model.Socio.Id">
+            <button type="submit" class="btn btn-outline-warning text-dark fw-bold" onclick="return confirm('¿Seguro que querés blanquear la contraseña de este socio?');">
+                <i class="bi bi-arrow-clockwise me-1"></i> Resetear a DNI
+            </button>
+        </form>
+    </div>
+</div>
 
 <form method="post" class="bg-white p-4 rounded shadow-sm">
     <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>

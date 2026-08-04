@@ -11,7 +11,7 @@
 
 <form method="post" class="bg-white p-4 rounded shadow-sm">
     <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
-
+    <input type="hidden" asp-for="ReservaId" />
     <div class="row">
         <!-- Columna Izquierda: Selección de Socie y Libro -->
         <div class="col-md-6 border-end pe-4">
@@ -26,12 +26,22 @@
                 <span asp-validation-for="Prestamo.SocioId" class="text-danger"></span>
             </div>
 
-            <div class="form-group mb-4">
-               <label class="form-label fw-bold">Buscar Libro</label>
-<select asp-for="Prestamo.LibroId" class="form-select" id="buscador-libros">
-    <!-- Lo dejamos vacío a propósito, los datos vienen de la búsqueda -->
-</select>
-                <span asp-validation-for="Prestamo.LibroId" class="text-danger"></span>
+            <div class="mb-3">
+                <label asp-for="Prestamo.LibroId" class="form-label fw-bold">Libro</label>
+
+                <select asp-for="Prestamo.LibroId" id="selectLibro" class="form-select" style="width: 100%;">
+                    <option value=" ">-- Buscar por título, autor o inventario --</option>
+
+                    <!-- SI VIENE PRESELECCIONADO DESDE EL PANEL, INSERTAMOS LA OPCIÓN MANUALMENTE -->
+                    @if (Model.LibroId.HasValue && ViewData["LibroPreseleccionadoTexto"] != null)
+                    {
+                        <option value="@Model.LibroId" selected="selected">
+                            @ViewData["LibroPreseleccionadoTexto"]
+                        </option>
+                    }
+                </select>
+
+                <span asp-validation-for="Prestamo.LibroId" class="text-danger small"></span>
             </div>
         </div>
 
@@ -70,7 +80,7 @@
 </form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <!-- CSS de Select2 -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -80,8 +90,9 @@
 
     <script>
         $(document).ready(function() {
-            $('#buscador-libros').select2({
-                placeholder: "Escribí el título o autor del libro...",
+            // CORRECCIÓN: Ahora apunta a #selectLibro que es el ID real de tu input
+            $('#selectLibro').select2({
+                placeholder: "Escribí el título, autor o inventario...",
                 minimumInputLength: 3, // Espera a que escribas 3 letras para buscar
                 language: {
                     inputTooShort: function() { return 'Escribí al menos 3 letras...'; },
@@ -89,9 +100,9 @@
                     searching: function() { return 'Buscando...'; }
                 },
                 ajax: {
-                    url: '?handler=BuscarLibros', // Llama al método C# que creamos
+                    url: '?handler=BuscarLibros', // Llama al método C# del backend
                     dataType: 'json',
-                    delay: 250, // Pequeña pausa de 1/4 de segundo para no saturar el servidor si tipea rápido
+                    delay: 250, // Pequeña pausa para no saturar el servidor
                     data: function (params) {
                         return { term: params.term };
                     },

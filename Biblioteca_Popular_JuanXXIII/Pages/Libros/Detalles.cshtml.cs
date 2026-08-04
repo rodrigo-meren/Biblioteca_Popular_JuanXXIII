@@ -47,6 +47,9 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Libros
             return Page();
         }
 
+        // ==========================================
+        // 1. MÉTODO PARA DEJAR RESEÑAS
+        // ==========================================
         public async Task<IActionResult> OnPostDejarResenaAsync(int libroId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -71,6 +74,60 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Libros
                 TempData["MensajeExito"] = "¡Gracias por compartir tu opinión con la comunidad!";
             }
 
+            // REDIRECCIÓN CORRECTA PARA EVITAR EL ERROR NULL
+            return RedirectToPage(new { id = libroId });
+        }
+
+        // ==========================================
+        // 2. MÉTODO PARA RESERVAR (El que faltaba)
+        // ==========================================
+        public async Task<IActionResult> OnPostReservarAsync(int libroId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var socio = await _context.Socios.FirstOrDefaultAsync(s => s.IdentityUserId == userId);
+
+            if (socio == null) return RedirectToPage("/Account/Logout", new { area = "Identity" });
+
+            var libro = await _context.Libros.FindAsync(libroId);
+            if (libro == null) return NotFound();
+
+            // Verificamos que no haya reservado este mismo libro antes
+            var reservaExistente = await _context.Reservas
+                .AnyAsync(r => r.LibroId == libroId && r.SocioId == socio.Id && (r.Estado == "Pendiente de retiro" || r.Estado == "En espera"));
+
+            if (reservaExistente)
+            {
+                TempData["MensajeError"] = "Ya tenés una reserva activa o estás en lista de espera para este libro.";
+                // REDIRECCIÓN CORRECTA
+                return RedirectToPage(new { id = libroId });
+            }
+
+            var nuevaReserva = new Reserva
+            {
+                LibroId = libro.Id,
+                SocioId = socio.Id,
+                FechaSolicitud = DateTime.Now
+            };
+
+            if (libro.Disponible)
+            {
+                nuevaReserva.Estado = "Pendiente de retiro";
+                nuevaReserva.FechaLimiteRetiro = DateTime.Now.AddHours(48);
+                libro.Disponible = false;
+
+                TempData["MensajeExito"] = $"¡Reserva confirmada! Tenés tiempo hasta el {nuevaReserva.FechaLimiteRetiro.Value.ToString("dd/MM HH:mm")} hs para pasar a retirarlo.";
+            }
+            else
+            {
+                nuevaReserva.Estado = "En espera";
+                nuevaReserva.FechaLimiteRetiro = null;
+                TempData["MensajeExito"] = "El libro no está disponible actualmente. Quedaste en la lista de espera y te vamos a avisar cuando lo devuelvan.";
+            }
+
+            _context.Reservas.Add(nuevaReserva);
+            await _context.SaveChangesAsync();
+
+            // REDIRECCIÓN CORRECTA (Evita el NullReferenceException)
             return RedirectToPage(new { id = libroId });
         }
     }

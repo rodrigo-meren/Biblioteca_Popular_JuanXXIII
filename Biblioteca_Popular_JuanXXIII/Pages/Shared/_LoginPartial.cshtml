@@ -12,7 +12,7 @@
     {
         // Vamos a la tabla Socios a buscar a la persona que tenga este DNI
         // Usamos .ToString() por si tu DniCarnet está guardado como número (int) en la tabla
-        var socioLigado = DbContext.Socios.FirstOrDefault(s => s.DniCarnet.ToString() == nombreAMostrar);
+        var socioLigado = DbContext.Socios.FirstOrDefault(s => s.DniCarnet == nombreAMostrar);
 
         if (socioLigado != null)
         {

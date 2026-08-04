@@ -163,14 +163,8 @@
                 @if (Model.MisCuotasPendientes != null && Model.MisCuotasPendientes.Any())
                 {
                     decimal deudaTotal = Model.MisCuotasPendientes.Sum(c => c.Monto);
-
                     <h3 class="fw-bold text-danger mb-0">$@deudaTotal.ToString("0.00")</h3>
                     <p class="text-muted small mb-3">Tenés @Model.MisCuotasPendientes.Count cuota(s) pendiente(s).</p>
-                    <form method="post" asp-page-handler="PagarConMercadoPago">
-                        <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">
-                            <i class="bi bi-credit-card"></i> Pagar con Mercado Pago
-                        </button>
-                    </form>
                 }
                 else
                 {
@@ -180,6 +174,35 @@
                         <small>Gracias por tu aporte a la biblioteca.</small>
                     </div>
                 }
+
+                <hr class="text-muted opacity-25" />
+
+                <!-- Formulario de Pago con Selector de Meses -->
+                <form method="post" asp-page-handler="PagarConMercadoPago">
+                    <div class="mb-3 text-start">
+                        <label class="form-label small fw-bold text-secondary">¿Cuántos meses querés abonar?</label>
+                        <select name="cantidadMeses" class="form-select border-primary shadow-sm">
+                            @if (Model.MisCuotasPendientes != null && Model.MisCuotasPendientes.Any())
+                            {
+                                int pendientes = Model.MisCuotasPendientes.Count;
+                                <option value="@pendientes">Saldar mi deuda (@pendientes mes/es)</option>
+                                <option value="@(pendientes + 1)">Mi deuda + 1 mes adelantado</option>
+                                <option value="@(pendientes + 3)">Mi deuda + 3 meses adelantados</option>
+                                <option value="@(pendientes + 6)">Mi deuda + 6 meses adelantados</option>
+                            }
+                            else
+                            {
+                                <option value="1">Adelantar 1 mes</option>
+                                <option value="3">Adelantar 3 meses (Trimestre)</option>
+                                <option value="6">Adelantar 6 meses (Semestre)</option>
+                                <option value="12">Adelantar 12 meses (Año)</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn w-100 fw-bold shadow-sm text-white" style="background-color: #009ee3;">
+                        <i class="bi bi-credit-card-2-front"></i> Pagar con Mercado Pago
+                    </button>
+                </form>
             </div>
         </div>
 
