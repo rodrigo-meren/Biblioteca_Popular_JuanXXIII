@@ -112,9 +112,12 @@ public class AltaModel : PageModel
         }
         catch (Exception ex)
         {
+            // Si el archivo está mal formado, falla la lectura, etc.
             TempData["MensajeError"] = $"Error al procesar el archivo: {ex.Message}";
+            return Page(); // <-- CLAVE: Usamos Page() para que muestre el error sin recargar
         }
 
+        // Si todo salió bien, ahí sí redirigimos limpiamente
         return RedirectToPage();
     }
 
