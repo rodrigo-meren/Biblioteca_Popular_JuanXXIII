@@ -2,7 +2,7 @@ services:
   web:
     build: .
     ports:
-      - "80:8080" # Expone la app al puerto 80 (el puerto web oficial)
+      - "5000:8080" # Expone la app al puerto 80 (el puerto web oficial)
     environment:
       # Sobreescribe el appsettings.json para conectar a la DB de Docker
       - ConnectionStrings__DefaultConnection=Host=db;Database=BibliotecaJuanXXIII;Username=postgres;Password=Manteca1
