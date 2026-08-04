@@ -44,6 +44,9 @@
                         @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
                         {
                             <li class="nav-item">
+                                <a class="nav-link text-white fw-bold" asp-page="/Noticias/Gestor">Noticias</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link text-white fw-bold" asp-page="/Socies/Inicio">Socios</a>
                             </li>
                             <li class="nav-item">

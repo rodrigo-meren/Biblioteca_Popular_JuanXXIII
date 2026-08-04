@@ -12,6 +12,8 @@ namespace Biblioteca_Popular_JuanXXIII
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             // Add services to the container.
             builder.Services.AddRazorPages();
