@@ -1,10 +1,34 @@
 @page
 @model Biblioteca_Popular_JuanXXIII.Pages.Socies.AltaModel
 @{
-    ViewData["Title"] = "Alta de Socie";
+    ViewData["Title"] = "Nuevo Socio";
 }
 
+<div class="col-md-5 mb-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Importación Masiva (CSV)</h5>
+        </div>
+        <div class="card-body">
+            <p class="card-text text-muted mb-4">
+                Subí un archivo <strong>.csv</strong> delimitado por punto y coma (<code>;</code>) con los datos de los socios para registrarlos en lote.
+            </p>
 
+            <!-- Formulario dirigido al handler OnPostImportarAsync -->
+            <form method="post" enctype="multipart/form-data" asp-page-handler="Importar">
+                <div class="mb-3">
+                    <label for="archivoCsv" class="form-label fw-bold">Seleccionar archivo CSV</label>
+                    <input type="file" class="form-control" id="archivoCsv" name="archivoCsv" accept=".csv" required />
+                </div>
+                <button type="submit" class="btn btn-success w-100">
+                    Importar Socios
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+</div>
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="text-institucional-rojo"><i class="bi bi-person-plus-fill me-2"></i>Registrar nueva Alta</h2>
 </div>
