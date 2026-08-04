@@ -1,0 +1,23 @@
+name: Despliegue automatico en DonWeb
+
+on:
+  push:
+    branches: [ "master", "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Conectando al servidor y actualizando la app
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        port: ${{ secrets.SERVER_PORT }}
+        script: |
+          cd Biblioteca_Popular_JuanXXIII
+          git pull origin master
+          cd Biblioteca_Popular_JuanXXIII
+          docker compose up -d --build
