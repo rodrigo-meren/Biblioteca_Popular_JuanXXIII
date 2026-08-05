@@ -20,7 +20,7 @@
             <div class="form-group mb-4">
                 <label asp-for="Prestamo.SocioId" class="control-label fw-bold">Socie *</label>
                 <!-- ViewBag.SocioId es cargado automáticamente por el Scaffolding -->
-                <select asp-for="Prestamo.SocioId" class="form-select border-primary" asp-items="ViewBag.SocioId">
+                <select asp-for="Prestamo.SocioId" id="selectSocio" class="form-select border-primary" asp-items="ViewBag.SocioId" style="width: 100%;">
                     <option value="">-- Seleccionar Socie --</option>
                 </select>
                 <span asp-validation-for="Prestamo.SocioId" class="text-danger"></span>
@@ -68,8 +68,7 @@
                 </div>
             </div>
             
-            <!-- Los campos de Estado, Renovaciones y Fecha de Devolución Real 
-                 NO van acá porque el modelo los autocompleta al nacer -->
+           
         </div>
     </div>
 
@@ -79,39 +78,38 @@
     </div>
 </form>
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-
-    <!-- CSS de Select2 -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    
-    <!-- JS de Select2 (Requiere jQuery, que ASP.NET ya trae por defecto) -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <script>
-        $(document).ready(function() {
-            // CORRECCIÓN: Ahora apunta a #selectLibro que es el ID real de tu input
-            $('#selectLibro').select2({
-                placeholder: "Escribí el título, autor o inventario...",
-                minimumInputLength: 3, // Espera a que escribas 3 letras para buscar
-                language: {
-                    inputTooShort: function() { return 'Escribí al menos 3 letras...'; },
-                    noResults: function() { return 'No se encontraron libros'; },
-                    searching: function() { return 'Buscando...'; }
-                },
-                ajax: {
-                    url: '?handler=BuscarLibros', // Llama al método C# del backend
-                    dataType: 'json',
-                    delay: 250, // Pequeña pausa para no saturar el servidor
-                    data: function (params) {
-                        return { term: params.term };
-                    },
-                    processResults: function (data) {
-                        return { results: data.results };
-                    }
-                }
-            });
+<script>
+    $(document).ready(function() {
+        
+        // 1. Convertimos el select de Socios en un buscador
+        $('#selectSocio').select2({
+            placeholder: "-- Seleccionar Socie --",
+            language: {
+                noResults: function() { return 'No se encontró el socio'; }
+            }
         });
-    </script>
-}
-}
+
+        // 2. Buscador de Libros (El que ya tenías)
+        $('#selectLibro').select2({
+            placeholder: "Escribí el título, autor o inventario...",
+            minimumInputLength: 3, 
+            language: {
+                inputTooShort: function() { return 'Escribí al menos 3 letras...'; },
+                noResults: function() { return 'No se encontraron libros'; },
+                searching: function() { return 'Buscando...'; }
+            },
+            ajax: {
+                url: '?handler=BuscarLibros', 
+                dataType: 'json',
+                delay: 250, 
+                data: function (params) {
+                    return { term: params.term };
+                },
+                processResults: function (data) {
+                    return { results: data.results };
+                }
+            }
+        });
+    });
+</script>
+

@@ -40,8 +40,7 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                 // Asignamos la fecha de devolución predeterminada (7 días)
                 Prestamo.FechaDevolucion = DateTime.Now.AddDays(7);
 
-                // Si viene preseleccionado desde el Panel, cargamos el libro en ViewData
-                // para que Select2 pueda mostrar el texto del libro sin que el usuario tenga que buscarlo
+              
                 var libroPreseleccionado = await _context.Libros.FindAsync(libroId.Value);
                 if (libroPreseleccionado != null)
                 {
@@ -60,13 +59,20 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                 return new JsonResult(new { results = new List<object>() });
             }
 
+            // 1. Pasamos lo que escribió el usuario a minúsculas
+            var terminoBusqueda = term.ToLower();
+
+            // 2. Filtramos pasando también los campos de la BD a minúsculas
             var libros = await _context.Libros
-                .Where(l => l.Titulo.Contains(term) || l.Autor.Contains(term) || l.CodigoInventario.Contains(term))
-                .Select(l => new {
+                .Where(l => l.Titulo.ToLower().Contains(terminoBusqueda) ||
+                            l.Autor.ToLower().Contains(terminoBusqueda) ||
+                            l.CodigoInventario.ToLower().Contains(terminoBusqueda)) // Si inventario es string
+                .Select(l => new
+                {
                     id = l.Id,
-                    text = l.CodigoInventario + " - " + l.Titulo + " (" + l.Autor + ")"
+                    text = $"{l.CodigoInventario} - {l.Titulo} ({l.Autor})"
                 })
-                .Take(20)
+                .Take(15) // Limitamos a 15 para que no explote
                 .ToListAsync();
 
             return new JsonResult(new { results = libros });
