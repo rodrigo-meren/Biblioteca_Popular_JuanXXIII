@@ -78,38 +78,48 @@
     </div>
 </form>
 
-<script>
-    $(document).ready(function() {
-        
-        // 1. Convertimos el select de Socios en un buscador
-        $('#selectSocio').select2({
-            placeholder: "-- Seleccionar Socie --",
-            language: {
-                noResults: function() { return 'No se encontró el socio'; }
-            }
-        });
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
-        // 2. Buscador de Libros (El que ya tenías)
-        $('#selectLibro').select2({
-            placeholder: "Escribí el título, autor o inventario...",
-            minimumInputLength: 3, 
-            language: {
-                inputTooShort: function() { return 'Escribí al menos 3 letras...'; },
-                noResults: function() { return 'No se encontraron libros'; },
-                searching: function() { return 'Buscando...'; }
-            },
-            ajax: {
-                url: '?handler=BuscarLibros', 
-                dataType: 'json',
-                delay: 250, 
-                data: function (params) {
-                    return { term: params.term };
-                },
-                processResults: function (data) {
-                    return { results: data.results };
+    <!-- 1. CSS de Select2 (Fundamental para que se vea lindo) -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <!-- 2. JS de Select2 (Fundamental para que funcione el buscador) -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            
+            // 3. Convertimos el select de Socios en un buscador
+            $('#selectSocio').select2({
+                placeholder: "-- Seleccionar Socie --",
+                language: {
+                    noResults: function() { return 'No se encontró el socio'; }
                 }
-            }
+            });
+
+            // 4. Buscador de Libros (El que ya tenías)
+            $('#selectLibro').select2({
+                placeholder: "Escribí el título, autor o inventario...",
+                minimumInputLength: 3, 
+                language: {
+                    inputTooShort: function() { return 'Escribí al menos 3 letras...'; },
+                    noResults: function() { return 'No se encontraron libros'; },
+                    searching: function() { return 'Buscando...'; }
+                },
+                ajax: {
+                    url: '?handler=BuscarLibros', 
+                    dataType: 'json',
+                    delay: 250, 
+                    data: function (params) {
+                        return { term: params.term };
+                    },
+                    processResults: function (data) {
+                        return { results: data.results };
+                    }
+                }
+            });
         });
-    });
-</script>
+    </script>
+}
 
