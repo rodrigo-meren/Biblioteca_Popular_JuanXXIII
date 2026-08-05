@@ -76,12 +76,17 @@ public class InicioModel : PageModel
         // C. Filtro 1: Buscador de texto
         if (!string.IsNullOrEmpty(BuscarTexto))
         {
-            consulta = consulta.Where(l => l.Titulo.Contains(BuscarTexto) ||
-                                           l.Autor.Contains(BuscarTexto) ||
-                                           l.GeneroLiterario.Contains(BuscarTexto) ||
-                                           l.ISBN.Contains(BuscarTexto));
-        }
+            // 1. Pasamos lo que escribió el usuario a minúsculas
+            var terminoBusqueda = BuscarTexto.ToLower();
 
+            // 2. Comparamos convirtiendo también los campos de la base a minúsculas
+            //    y agregamos el CodigoInventario a la búsqueda
+            consulta = consulta.Where(l => l.Titulo.ToLower().Contains(terminoBusqueda) ||
+                                           l.Autor.ToLower().Contains(terminoBusqueda) ||
+                                           l.GeneroLiterario.ToLower().Contains(terminoBusqueda) ||
+                                           l.ISBN.ToLower().Contains(terminoBusqueda) ||
+                                           l.CodigoInventario.ToLower().Contains(terminoBusqueda));
+        }
         // D. Filtro 2: Menú desplegable de Género
         if (!string.IsNullOrEmpty(FiltroGenero))
         {

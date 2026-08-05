@@ -84,6 +84,16 @@ public class AltaModel : PageModel
                             libro.Disponible = true;
                             libro.EsDestacado = false;
                             libro.GeneroLiterario = generoCalculado; // Asignamos el género
+                            var ultimoLibro = await _context.Libros
+                             .OrderByDescending(l => l.Id)
+                             .FirstOrDefaultAsync();
+                           
+                            int proximoNumero = ultimoLibro != null ? ultimoLibro.Id + 1 : 1;
+                                                       
+                            Libro.CodigoInventario = proximoNumero.ToString();
+                            
+                            _context.Libros.Add(Libro);
+                            await _context.SaveChangesAsync();
                             _context.Libros.Add(libro);
                             librosAgregados++;
                         }
@@ -118,10 +128,12 @@ public class AltaModel : PageModel
     // ==========================================
     public async Task<IActionResult> OnPostAsync()
     {
+        ModelState.Remove("Libro.CodigoInventario");
         if (!ModelState.IsValid)
         {
             return Page();
         }
+
 
         var existeLibro = await _context.Libros.AnyAsync(l => l.CodigoInventario == Libro.CodigoInventario);
         if (existeLibro)
@@ -130,7 +142,37 @@ public class AltaModel : PageModel
             return Page();
         }
 
-        Libro.Disponible = true;
+        var maxId = await _context.Libros.MaxAsync(l => (int?)l.Id) ?? 0;
+        int nextId = maxId + 1;
+
+        try
+        {
+            // Fuerza a PostgreSQL a reiniciar el autoincremental de la columna Id
+            await _context.Database.ExecuteSqlRawAsync($"ALTER TABLE \"Libros\" ALTER COLUMN \"Id\" RESTART WITH {nextId};");
+        }
+        catch
+        {
+            // Plan B por si tu PostgreSQL usa el formato viejo de secuencias (serial)
+            try { await _context.Database.ExecuteSqlRawAsync($"SELECT setval('\"Libros_Id_seq\"', {maxId});"); } catch { }
+            try { await _context.Database.ExecuteSqlRawAsync($"SELECT setval('\"Libro_Id_seq\"', {maxId});"); } catch { }
+        }
+
+        // =========================================================
+        // 2. LÓGICA DE CÓDIGO DE INVENTARIO AUTOMÁTICO
+        // =========================================================
+        var codigos = await _context.Libros
+            .Select(l => l.CodigoInventario)
+            .ToListAsync();
+
+        int maxInventario = codigos
+            .Where(c => !string.IsNullOrEmpty(c))
+            .Select(c => int.TryParse(c, out int numero) ? numero : 0)
+            .DefaultIfEmpty(0)
+            .Max();
+
+        int proximoNumero = Math.Max(maxInventario, 12067) + 1;
+        Libro.CodigoInventario = proximoNumero.ToString();
+        // =========================================================
 
         _context.Libros.Add(Libro);
         await _context.SaveChangesAsync();

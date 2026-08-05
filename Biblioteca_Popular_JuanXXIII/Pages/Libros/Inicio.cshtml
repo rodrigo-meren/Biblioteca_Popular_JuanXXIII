@@ -21,7 +21,7 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="text-danger">Catálogo de Libros</h1> 
+    <h1 class="text-danger">Catálogo de Libros</h1>
     @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
     {
         <a asp-page="./Alta" class="btn btn-success fw-bold">
@@ -34,7 +34,7 @@
         <form method="get">
             <div class="row align-items-end g-3">
 
-                <!-- (Opcional) Buscador por texto si lo querés sumar en el futuro -->
+               
                 <div class="col-md-5">
                     <label class="form-label text-muted small fw-bold mb-1">Buscar libro o autor</label>
                     <div class="input-group">
@@ -70,30 +70,30 @@
 </div>
 
 <div class="table-responsive">
+
    
-  
-@if (TempData["MensajeExito"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i> @TempData["MensajeExito"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-@if (TempData["MensajeError"] != null)
-{
-    <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["MensajeError"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+    @if (TempData["MensajeExito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["MensajeExito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["MensajeError"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["MensajeError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
     <table class="table table-hover table-striped align-middle">
         <thead class="table-dark">
             <tr>
                 <th>Inventario</th>
                 @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
-        {
-            <th>Ubicación</th>
-        }
+                {
+                    <th>Ubicación</th>
+                }
                 <th>Título</th>
                 <th>Autor</th>
                 <th>Disponibilidad</th>
@@ -106,143 +106,145 @@
                 <tr>
                     <td><strong>@item.CodigoInventario</strong></td>
                     @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
-            {
-               
-                <td>@(string.IsNullOrEmpty(item.UbicacionFisica) ? "-" : item.UbicacionFisica)</td>
-            }
+                    {
+
+                        <td>@(string.IsNullOrEmpty(item.UbicacionFisica) ? "-" : item.UbicacionFisica)</td>
+                    }
                     <td>@item.Titulo</td>
                     <td>@item.Autor</td>
                     <td>
-                       @if (item.Disponible)
-                      {
-            <span class="badge bg-success">Disponible</span>
-        }
-        else
-        {
-            <span class="badge bg-danger">No Disponible</span>
-        }
+                        @if (item.Disponible)
+                        {
+                            <span class="badge bg-success">Disponible</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">No Disponible</span>
+                        }
                     </td>
+
                 
-        
-    <td>
-        <div class="d-flex align-items-center gap-1 flex-wrap">
-            
-            <a asp-page="./Detalles" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info shadow-sm" title="Ver detalles">
-                <i class="bi bi-eye"></i> Detalles
-            </a>
+                    <td>
+                        <div class="d-flex align-items-center gap-1 flex-wrap">
 
-            <!-- ZONA DE STAFF (Admins y Bibliotecarios) -->
-            @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
-            {
-                <!-- NUEVO BOTÓN: Destacar en Portada -->
-                <form method="post" asp-page-handler="AlternarDestacado" class="m-0">
-                    <input type="hidden" name="id" value="@item.Id" />
-                    <!-- Si ya está destacado, el botón se pinta de amarillo sólido. Si no, queda con el borde amarillo -->
-                    <button type="submit" class="btn btn-sm shadow-sm @(item.EsDestacado ? "btn-warning text-dark" : "btn-outline-warning")" title="@(item.EsDestacado ? "Quitar de portada" : "Destacar en portada")">
-                        <i class="bi @(item.EsDestacado ? "bi-star-fill" : "bi-star")"></i>
-                    </button>
-                </form>
+                            <a asp-page="./Detalles" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info shadow-sm" title="Ver detalles">
+                                <i class="bi bi-eye"></i> Detalles
+                            </a>
 
-                <a class="btn btn-sm btn-outline-secondary shadow-sm" asp-page="./Editar" asp-route-id="@item.Id" title="Editar">
-                    <i class="bi bi-pencil"></i>
-                </a>
-                <a class="btn btn-sm btn-outline-danger shadow-sm" asp-page="./Eliminar" asp-route-id="@item.Id" title="Eliminar">
-                    <i class="bi bi-trash"></i>
-                </a>
-            }
+                            <!-- ZONA DE STAFF (Admins y Bibliotecarios) -->
+                            @if (User.IsInRole("Administrador") || User.IsInRole("Bibliotecario"))
+                            {
+                                <!-- NUEVO BOTÓN: Destacar en Portada -->
+                                <form method="post" asp-page-handler="AlternarDestacado" class="m-0">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <!-- Si ya está destacado, el botón se pinta de amarillo sólido. Si no, queda con el borde amarillo -->
+                                    <button type="submit" class="btn btn-sm shadow-sm @(item.EsDestacado ? "btn-warning text-dark" : "btn-outline-warning")" title="@(item.EsDestacado ? "Quitar de portada" : "Destacar en portada")">
+                                        <i class="bi @(item.EsDestacado ? "bi-star-fill" : "bi-star")"></i>
+                                    </button>
+                                </form>
 
-            <!-- ZONA DE SOCIES -->
-            @if (User.IsInRole("Socio"))
-            {
-                <form method="post" asp-page-handler="Reservar" class="m-0">
-                    <input type="hidden" name="libroId" value="@item.Id" />
-                    <button type="submit" class="btn btn-sm btn-primary fw-bold shadow-sm">
-                        <i class="bi bi-bookmark-plus"></i> Reservar
-                    </button>
-                </form>
-            }
-            
-        </div>
-    </td>              
+                                <a class="btn btn-sm btn-outline-secondary shadow-sm" asp-page="./Editar" asp-route-id="@item.Id" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" asp-page-handler="Eliminar" asp-route-id="@item.Id" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que querés borrar este libro definitivamente?');">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                            }
+
+                            <!-- ZONA DE SOCIES -->
+                            @if (User.IsInRole("Socio"))
+                            {
+                                <form method="post" asp-page-handler="Reservar" class="m-0">
+                                    <input type="hidden" name="libroId" value="@item.Id" />
+                                    <button type="submit" class="btn btn-sm btn-primary fw-bold shadow-sm">
+                                        <i class="bi bi-bookmark-plus"></i> Reservar
+                                    </button>
+                                </form>
+                            }
+
+                        </div>
+                    </td>
+
                         
-      
                 </tr>
             }
         </tbody>
     </table>
-   @if (Model.TotalPaginas > 1)
+    @if (Model.TotalPaginas > 1)
     {
 
-    int maxPaginasVisibles = 5;
-    int paginaInicio = Math.Max(1, Model.PaginaActual - 2);
-    int paginaFin = Math.Min(Model.TotalPaginas, paginaInicio + maxPaginasVisibles - 1);
+        int maxPaginasVisibles = 5;
+        int paginaInicio = Math.Max(1, Model.PaginaActual - 2);
+        int paginaFin = Math.Min(Model.TotalPaginas, paginaInicio + maxPaginasVisibles - 1);
 
-    // Ajuste matemático por si el usuario está en las últimas páginas de la lista
-    paginaInicio = Math.Max(1, paginaFin - maxPaginasVisibles + 1);
+        // Ajuste matemático por si el usuario está en las últimas páginas de la lista
+        paginaInicio = Math.Max(1, paginaFin - maxPaginasVisibles + 1);
 
-    <nav aria-label="Navegación de páginas">
-        <ul class="pagination justify-content-center mt-4 shadow-sm">
-            
-            <!-- Botón Primera (Súper útil para volver rápido) -->
-            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="1" asp-route-Buscar="@Model.BuscarTexto">
-                    <i class="bi bi-chevron-double-left"></i> Primera
-                </a>
-            </li>
+        <nav aria-label="Navegación de páginas">
+            <ul class="pagination justify-content-center mt-4 shadow-sm">
 
-            <!-- Botón Anterior -->
-            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual - 1)" asp-route-Buscar="@Model.BuscarTexto">
-                    <i class="bi bi-chevron-left"></i> Anterior
-                </a>
-            </li>
-
-            <!-- Números de página con ventana dinámica -->
-            @for (int i = paginaInicio; i <= paginaFin; i++)
-            {
-                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                    <a class="page-link" asp-route-PaginaActual="@i" asp-route-Buscar="@Model.BuscarTexto">@i</a>
+                <!-- Botón Primera (Súper útil para volver rápido) -->
+                <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-route-PaginaActual="1" asp-route-Buscar="@Model.BuscarTexto">
+                        <i class="bi bi-chevron-double-left"></i> Primera
+                    </a>
                 </li>
-            }
 
-            <!-- Botón Siguiente -->
-            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual + 1)" asp-route-Buscar="@Model.BuscarTexto">
-                    Siguiente <i class="bi bi-chevron-right"></i>
-                </a>
-            </li>
-            
-            <!-- Botón Última -->
-            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@Model.TotalPaginas" asp-route-Buscar="@Model.BuscarTexto">
-                    Última <i class="bi bi-chevron-double-right"></i>
-                </a>
-            </li>
-            
-        </ul>
-    </nav>
-    
-    <!-- Muestra informativa opcional para no perderse -->
-    <div class="text-center text-muted small mt-2">
-        Página @Model.PaginaActual de @Model.TotalPaginas
-    </div>
+                <!-- Botón Anterior -->
+                <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual - 1)" asp-route-Buscar="@Model.BuscarTexto">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+
+                <!-- Números de página con ventana dinámica -->
+                @for (int i = paginaInicio; i <= paginaFin; i++)
+                {
+                    <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                        <a class="page-link" asp-route-PaginaActual="@i" asp-route-Buscar="@Model.BuscarTexto">@i</a>
+                    </li>
+                }
+
+                <!-- Botón Siguiente -->
+                <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                    <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual + 1)" asp-route-Buscar="@Model.BuscarTexto">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+
+                <!-- Botón Última -->
+                <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                    <a class="page-link" asp-route-PaginaActual="@Model.TotalPaginas" asp-route-Buscar="@Model.BuscarTexto">
+                        Última <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+
+        <!-- Muestra informativa opcional para no perderse -->
+        <div class="text-center text-muted small mt-2">
+            Página @Model.PaginaActual de @Model.TotalPaginas
+        </div>
     }
 </div>
 
-              @section Scripts {
+@section Scripts {
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            
+        document.addEventListener("DOMContentLoaded", function() {
+
             // Buscamos el formulario directamente por su ID
             let formSincronizacion = document.getElementById('form-sincronizar');
-            
+
             if (formSincronizacion) {
                 console.log("¡Autoclicker activado! Esperando 3 segundos para el próximo lote...");
-                
+
                 // Le damos 3 segundos de respiro a la API de Google
-                setTimeout(function () {
+                setTimeout(function() {
                     formSincronizacion.submit();
-                }, 3000); 
+                }, 3000);
             } else {
                 console.log("No se encontró el botón de sincronizar.");
             }
