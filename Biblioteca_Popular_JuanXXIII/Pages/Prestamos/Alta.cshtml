@@ -19,7 +19,6 @@
             
             <div class="form-group mb-4">
                 <label asp-for="Prestamo.SocioId" class="control-label fw-bold">Socie *</label>
-                <!-- ViewBag.SocioId es cargado automáticamente por el Scaffolding -->
                 <select asp-for="Prestamo.SocioId" id="selectSocio" class="form-select border-primary" asp-items="ViewBag.SocioId" style="width: 100%;">
                     <option value="">-- Seleccionar Socie --</option>
                 </select>
@@ -28,11 +27,8 @@
 
             <div class="mb-3">
                 <label asp-for="Prestamo.LibroId" class="form-label fw-bold">Libro</label>
-
                 <select asp-for="Prestamo.LibroId" id="selectLibro" class="form-select" style="width: 100%;">
-                    <option value=" ">-- Buscar por título, autor o inventario --</option>
-
-                    <!-- SI VIENE PRESELECCIONADO DESDE EL PANEL, INSERTAMOS LA OPCIÓN MANUALMENTE -->
+                    <option value="">-- Buscar por título, autor o inventario --</option>
                     @if (Model.LibroId.HasValue && ViewData["LibroPreseleccionadoTexto"] != null)
                     {
                         <option value="@Model.LibroId" selected="selected">
@@ -40,7 +36,6 @@
                         </option>
                     }
                 </select>
-
                 <span asp-validation-for="Prestamo.LibroId" class="text-danger small"></span>
             </div>
         </div>
@@ -48,7 +43,6 @@
         <!-- Columna Derecha: Fechas -->
         <div class="col-md-6 ps-4">
             <h4 class="text-muted mb-3">Plazos</h4>
-
             <div class="row">
                 <div class="col-12 form-group mb-3">
                     <label asp-for="Prestamo.FechaPrestamo" class="control-label fw-bold">Fecha de Préstamo</label>
@@ -67,8 +61,6 @@
                     <span asp-validation-for="Prestamo.FechaVencimiento" class="text-danger"></span>
                 </div>
             </div>
-            
-           
         </div>
     </div>
 
@@ -80,17 +72,10 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-
-    <!-- 1. CSS de Select2 (Fundamental para que se vea lindo) -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    
-    <!-- 2. JS de Select2 (Fundamental para que funcione el buscador) -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
     <script>
         $(document).ready(function() {
-            
-            // 3. Convertimos el select de Socios en un buscador
             $('#selectSocio').select2({
                 placeholder: "-- Seleccionar Socie --",
                 language: {
@@ -98,7 +83,6 @@
                 }
             });
 
-            // 4. Buscador de Libros (El que ya tenías)
             $('#selectLibro').select2({
                 placeholder: "Escribí el título, autor o inventario...",
                 minimumInputLength: 3, 
