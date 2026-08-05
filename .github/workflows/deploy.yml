@@ -18,5 +18,6 @@ jobs:
         port: ${{ secrets.SERVER_PORT }}
         script: |
           cd Biblioteca_Popular_JuanXXIII/Biblioteca_Popular_JuanXXIII
-          git pull origin master
+          git fetch origin
+          git reset --hard origin/master
           docker compose up -d --build
