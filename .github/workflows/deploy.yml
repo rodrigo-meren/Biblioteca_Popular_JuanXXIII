@@ -17,7 +17,6 @@ jobs:
         password: ${{ secrets.SERVER_PASSWORD }}
         port: ${{ secrets.SERVER_PORT }}
         script: |
-          cd Biblioteca_Popular_JuanXXIII
+          cd Biblioteca_Popular_JuanXXIII/Biblioteca_Popular_JuanXXIII
           git pull origin master
-          cd Biblioteca_Popular_JuanXXIII
           docker compose up -d --build
