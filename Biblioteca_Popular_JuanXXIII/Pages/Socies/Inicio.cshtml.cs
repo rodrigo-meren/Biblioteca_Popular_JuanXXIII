@@ -44,10 +44,13 @@ public class InicioModel : PageModel
         // 2. Si el usuario escribió algo en el buscador, filtramos
         if (!string.IsNullOrEmpty(Buscar))
         {
-            // Como DniCarnet YA ES UN STRING, usamos .Contains() directamente sin convertir nada
-            consulta = consulta.Where(s => s.Nombre.Contains(Buscar) ||
-                                           s.Apellido.Contains(Buscar) ||
-                                           s.DniCarnet.Contains(Buscar));
+            // Pasamos el texto ingresado a minúsculas
+            var terminoBusqueda = Buscar.ToLower();
+
+            // Comparamos convirtiendo también los campos de la base a minúsculas
+            consulta = consulta.Where(s => s.Nombre.ToLower().Contains(terminoBusqueda) ||
+                                           s.Apellido.ToLower().Contains(terminoBusqueda) ||
+                                           s.DniCarnet.Contains(terminoBusqueda));
         }
 
         // 3. Calculamos la paginación basados en lo que quedó filtrado
@@ -65,34 +68,7 @@ public class InicioModel : PageModel
             .Take(RegistrosPorPagina)
             .ToListAsync();
     }
-    // ==========================================
-    // TRUCO TEMPORAL PARA CREAR AL PRIMER ADMIN
-    // ==========================================
-    public async Task<IActionResult> OnGetHacerAdminAsync(
-        [FromServices] UserManager<IdentityUser> userManager,
-        [FromServices] RoleManager<IdentityRole> roleManager)
-    {
-        var dni = "92659857";
-
-        // 1. Buscamos la cuenta digital de ese DNI
-        var usuario = await userManager.FindByNameAsync(dni);
-        if (usuario == null)
-        {
-            return Content($"Error: No se encontró la cuenta digital para el DNI {dni}. Asegurate de haberlo dado de alta primero.");
-        }
-
-        // 2. Verificamos si el rol "Administrador" existe en la base de datos. Si no, lo creamos.
-        bool rolExiste = await roleManager.RoleExistsAsync("Administrador");
-        if (!rolExiste)
-        {
-            await roleManager.CreateAsync(new IdentityRole("Administrador"));
-        }
-
-        // 3. Le asignamos la medalla de Administrador al usuario
-        await userManager.AddToRoleAsync(usuario, "Administrador");
-
-        return Content($"¡Éxito total! El DNI {dni} ahora es Administrador del sistema.");
-    }
+   
     public async Task<IActionResult> OnPostImportarAsync(IFormFile archivoCsv)
         {
             if (archivoCsv == null || archivoCsv.Length == 0)

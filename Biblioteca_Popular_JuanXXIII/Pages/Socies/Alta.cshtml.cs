@@ -129,6 +129,17 @@ public class AltaModel : PageModel
             return Page();
         }
 
+      
+        bool dniExiste = await _context.Socios.AnyAsync(s => s.DniCarnet == Socio.DniCarnet);
+
+        if (dniExiste)
+        {
+            // Le avisamos al usuario y frenamos el proceso acá mismo
+            ModelState.AddModelError("Socio.DniCarnet", "Ya existe un socio registrado con este DNI.");
+            return Page();
+        }
+        // ====================================================================
+
         Socio.Activo = true;
         var stringDni = Socio.DniCarnet.ToString();
         string correoIdentity = string.IsNullOrEmpty(Socio.Correo) ? $"{stringDni}@biblioteca.local" : Socio.Correo;
