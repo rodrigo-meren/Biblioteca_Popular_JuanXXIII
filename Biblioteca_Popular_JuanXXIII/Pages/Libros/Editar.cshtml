@@ -12,6 +12,9 @@
 <form method="post">
     <!-- EL CAMPO OCULTO VITAL PARA QUE ENTITY FRAMEWORK SEPA QUÉ ACTUALIZAR -->
     <input type="hidden" asp-for="Libro.Id" />
+    <input type="hidden" asp-for="Libro.EsDestacado" />
+    <input type="hidden" asp-for="Libro.Disponible" />
+    <input type="hidden" asp-for="Libro.UrlPortada" />
 
     <div class="row">
         <!-- Columna Izquierda -->

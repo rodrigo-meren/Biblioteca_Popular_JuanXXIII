@@ -5,6 +5,19 @@
 }
 
 <h2>Dar de alta un nuevo libro</h2>
+@if (TempData["CodigoGenerado"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow border-2 border-success" role="alert">
+        <h4 class="alert-heading mb-2"><i class="bi bi-check-circle-fill me-2"></i>¡Libro guardado con éxito!</h4>
+        <p class="mb-2">El libro se registró correctamente en el catálogo.</p>
+        <hr>
+        <p class="mb-0 fs-5">
+            Por favor, asignale la etiqueta con el inventario número: 
+            <strong class="bg-white text-success px-2 py-1 rounded border border-success fs-4">@TempData["CodigoGenerado"]</strong>
+        </p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 <hr />
 @if (TempData["MensajeExito"] != null)
 {
@@ -62,8 +75,12 @@
 
             <!-- CÓDIGO DE INVENTARIO AUTOMÁTICO (Solo lectura) -->
             <div class="form-group mb-3">
-                 <label class="control-label fw-bold text-secondary">Código de Inventario</label>
-                 <input name="Libro.CodigoInventario" value="AUTO" class="form-control bg-light text-muted border-secondary" readonly />
+                 <label asp-for="Libro.CodigoInventario" class="control-label fw-bold text-primary">
+                     <i class="bi bi-tag-fill me-1"></i>N° de Etiqueta (Inventario)
+                 </label>
+                 <!-- Muestra en vivo el número calculado por el backend -->
+                 <input asp-for="Libro.CodigoInventario" class="form-control bg-light text-primary fw-bold fs-5 border-primary" readonly />
+                 <span asp-validation-for="Libro.CodigoInventario" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
@@ -73,8 +90,8 @@
             </div>
 
             <div class="form-group mb-3">
-                <label asp-for="Libro.Autor" class="control-label fw-bold">Autor *</label>
-                <input asp-for="Libro.Autor" id="inputAutor" class="form-control" required />
+                <label asp-for="Libro.Autor" class="control-label fw-bold">Autor</label>
+                <input asp-for="Libro.Autor" id="inputAutor" class="form-control" data-val="false" />
                 <span asp-validation-for="Libro.Autor" class="text-danger"></span>
             </div>
 
@@ -98,9 +115,25 @@
                     <input asp-for="Libro.AnioPublicacion" id="inputAnio" class="form-control" />
                 </div>
                 <div class="col-6 form-group mb-3">
-                    <label asp-for="Libro.GeneroLiterario" class="control-label fw-bold">Género</label>
-                    <input asp-for="Libro.GeneroLiterario" id="inputGenero" class="form-control" />
-                </div>
+    <label asp-for="Libro.GeneroLiterario" class="control-label fw-bold">Género / CDD</label>
+    <input asp-for="Libro.GeneroLiterario" id="inputGenero" class="form-control" list="listaGeneros" autocomplete="off" />
+    
+    <!-- Lista de ayuda visual para el bibliotecario -->
+    <datalist id="listaGeneros">
+        <option value="Arte. Dibujo. Pintura"></option>
+        <option value="Musica. Teoria musical. Danza"></option>
+        <option value="Bibliotecologia"></option>
+        <option value="Fotografia"></option>
+        <option value="Cine"></option>
+        <option value="Antropologia"></option>
+        <option value="Sociologia"></option>
+        <option value="Trabajo social"></option>
+        <option value="Divulgacion cientifica"></option>
+        <option value="Reproduccion. Maternidad"></option>
+        <option value="Autores locales"></option>
+        <option value="Ajedrez"></option>
+    </datalist>
+</div>
             </div>
 
             <!-- UBICACIÓN FÍSICA -->
@@ -208,6 +241,28 @@
                 btn.innerHTML = 'Autocompletar';
                 btn.disabled = false;
             }
+            const inputUbicacion = document.querySelector('[name="Libro.UbicacionFisica"]');
+        const inputGenero = document.getElementById('inputGenero');
+
+        if (inputUbicacion && inputGenero) {
+            // Escucha cuando el usuario termina de escribir la ubicación y sale del campo
+            inputUbicacion.addEventListener('blur', async function() {
+                const valorUbicacion = this.value.trim();
+                
+                if (valorUbicacion) {
+                    try {
+                        // Le pregunta al backend qué género corresponde
+                        const response = await fetch(`?handler=ObtenerGenero&ubicacion=${encodeURIComponent(valorUbicacion)}`);
+                        const generoSugerido = await response.json();
+
+                        // Si el campo género está vacío, lo completa con la sugerencia
+                        if (!inputGenero.value || inputGenero.value === "Sin clasificar" || inputGenero.value === "General") {
+                            inputGenero.value = generoSugerido;
+                        }
+                    } catch (error) {
+                        console.error("Error al obtener el género:", error);
+                    }
+                }
         });
     </script>
 }

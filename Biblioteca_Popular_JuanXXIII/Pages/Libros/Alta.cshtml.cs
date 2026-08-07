@@ -23,8 +23,28 @@ public class AltaModel : PageModel
     [BindProperty]
     public Libro Libro { get; set; } = default!;
 
-    public IActionResult OnGet()
+   
+    public async Task<IActionResult> OnGetAsync()
     {
+        // Buscamos el último código usado apenas el bibliotecario entra a la página
+        var codigos = await _context.Libros
+            .Select(l => l.CodigoInventario)
+            .ToListAsync();
+
+        int maxInventario = codigos
+            .Where(c => !string.IsNullOrEmpty(c))
+            .Select(c => int.TryParse(c, out int numero) ? numero : 0)
+            .DefaultIfEmpty(0)
+            .Max();
+
+        int proximoNumero = Math.Max(maxInventario, 12067) + 1;
+
+        // Se lo asignamos al modelo para que el HTML lo muestre
+        Libro = new Libro
+        {
+            CodigoInventario = proximoNumero.ToString()
+        };
+
         return Page();
     }
 
@@ -128,17 +148,24 @@ public class AltaModel : PageModel
     // ==========================================
     public async Task<IActionResult> OnPostAsync()
     {
-        ModelState.Remove("Libro.CodigoInventario");
+        ModelState.Remove("Libro.Autor");
+
+        if (string.IsNullOrWhiteSpace(Libro.Autor))
+        {
+            Libro.Autor = "Anónimo";
+        }
+
         if (!ModelState.IsValid)
         {
             return Page();
         }
 
-
+        // Chequeamos que en el tiempo que tardó en llenar el formulario, 
+        // otra persona no haya usado el mismo número.
         var existeLibro = await _context.Libros.AnyAsync(l => l.CodigoInventario == Libro.CodigoInventario);
         if (existeLibro)
         {
-            ModelState.AddModelError("Libro.CodigoInventario", "Este código de inventario ya está registrado en el catálogo.");
+            ModelState.AddModelError("Libro.CodigoInventario", "Este código acaba de ser usado. Actualizá la página para obtener el siguiente.");
             return Page();
         }
 
@@ -147,65 +174,56 @@ public class AltaModel : PageModel
 
         try
         {
-            // Fuerza a PostgreSQL a reiniciar el autoincremental de la columna Id
             await _context.Database.ExecuteSqlRawAsync($"ALTER TABLE \"Libros\" ALTER COLUMN \"Id\" RESTART WITH {nextId};");
         }
         catch
         {
-            // Plan B por si tu PostgreSQL usa el formato viejo de secuencias (serial)
             try { await _context.Database.ExecuteSqlRawAsync($"SELECT setval('\"Libros_Id_seq\"', {maxId});"); } catch { }
             try { await _context.Database.ExecuteSqlRawAsync($"SELECT setval('\"Libro_Id_seq\"', {maxId});"); } catch { }
         }
 
-        // =========================================================
-        // 2. LÓGICA DE CÓDIGO DE INVENTARIO AUTOMÁTICO
-        // =========================================================
-        var codigos = await _context.Libros
-            .Select(l => l.CodigoInventario)
-            .ToListAsync();
-
-        int maxInventario = codigos
-            .Where(c => !string.IsNullOrEmpty(c))
-            .Select(c => int.TryParse(c, out int numero) ? numero : 0)
-            .DefaultIfEmpty(0)
-            .Max();
-
-        int proximoNumero = Math.Max(maxInventario, 12067) + 1;
-        Libro.CodigoInventario = proximoNumero.ToString();
-        // =========================================================
-
+        // Ya NO calculamos el número acá. Respetamos el que vino del formulario (Libro.CodigoInventario)
         _context.Libros.Add(Libro);
         await _context.SaveChangesAsync();
 
-        TempData["MensajeExito"] = "Libro registrado en el catálogo con éxito.";
-        return RedirectToPage("./Inicio");
+        TempData["MensajeExito"] = $"Libro registrado con éxito en el inventario N° {Libro.CodigoInventario}.";
+        return RedirectToPage("./Alta");
     }
     // ==========================================
-    // TRADUCTOR DE CDU A GÉNERO LITERARIO (VERSIÓN DETALLADA)
+    // TRADUCTOR DE CDU A GÉNERO LITERARIO (VERSIÓN DETALLADA + TESAURO LOCAL)
     // ==========================================
     private string ObtenerGeneroPorCDU(string signatura)
     {
         if (string.IsNullOrWhiteSpace(signatura)) return "Sin clasificar";
 
-        // Limpiamos espacios y tomamos solo la primera parte (el número antes de las letras del autor)
+        // Limpiamos espacios y tomamos solo la primera parte
         var partes = signatura.Trim().Split(' ');
-        var codigo = partes[0];
+        var codigo = partes[0].ToUpper();
+
+        // 0. MAPEO PERSONALIZADO (El Tesauro de la Biblioteca)
+        if (codigo.StartsWith("*L")) return "Autores locales";
+        if (codigo.StartsWith("02")) return "Bibliotecologia";
+        if (codigo.StartsWith("001.92")) return "Divulgacion cientifica";
+        if (codigo.StartsWith("31")) return "Sociologia";
+        if (codigo.StartsWith("36")) return "Trabajo social";
+        if (codigo.StartsWith("572")) return "Antropologia";
+        if (codigo.StartsWith("57.017.5")) return "Reproduccion. Maternidad";
+        if (codigo.StartsWith("794.1")) return "Ajedrez";
+        if (codigo.StartsWith("791.43")) return "Cine";
+        if (codigo.StartsWith("78")) return "Musica. Teoria musical. Danza";
+        if (codigo.StartsWith("77")) return "Fotografia";
+        if (codigo == "7") return "Arte. Dibujo. Pintura";
 
         // 1. Mapeo detallado de Literatura (La rama del 800)
         if (codigo.StartsWith("82-1")) return "Poesía";
         if (codigo.StartsWith("82-2")) return "Teatro / Drama";
-
-        // --- SUBCATEGORÍAS ESPECÍFICAS DE NARRATIVA ---
-        // (Tienen que ir arriba para que el sistema las detecte primero)
         if (codigo.StartsWith("82-311.2")) return "Novela Histórica";
         if (codigo.StartsWith("82-311.9")) return "Ciencia Ficción";
         if (codigo.StartsWith("82-31")) return "Novela";
         if (codigo.StartsWith("82-32")) return "Novela Corta";
         if (codigo.StartsWith("82-34")) return "Cuento / Relato";
         if (codigo.StartsWith("82-36")) return "Mitos y Leyendas";
-        // Si no encaja en ninguna de las de arriba, cae en la general:
         if (codigo.StartsWith("82-3")) return "Narrativa";
-
         if (codigo.StartsWith("82-4")) return "Ensayo";
         if (codigo.StartsWith("82-9") || codigo.StartsWith("82-93")) return "Literatura Infantil / Juvenil";
         if (codigo.StartsWith("8")) return "Literatura / Lingüística";
@@ -227,6 +245,15 @@ public class AltaModel : PageModel
 
         return "General";
     }
+
+    // ==========================================
+    // ENDPOINT PARA EL AUTOCOMPLETADO EN VIVO (AJAX)
+    // ==========================================
+    public IActionResult OnGetObtenerGenero(string ubicacion)
+    {
+        string generoCalculado = ObtenerGeneroPorCDU(ubicacion);
+        return new JsonResult(generoCalculado);
+    }
 }
 
 // ==========================================================
@@ -238,7 +265,7 @@ public sealed class LibroMap : ClassMap<Libro>
     {
         Map(m => m.CodigoInventario).Name("Codigo_Inventario", "CodigoInventario");
         Map(m => m.Titulo).Name("Titulo");
-        Map(m => m.Autor).Name("Autor");
+        Map(m => m.Autor).Name("Autor").Optional();
         Map(m => m.ISBN).Name("ISBN").Optional();
         Map(m => m.Editorial).Name("Editorial").Optional();
         Map(m => m.AnioPublicacion).Name("Anio_Publicacion", "AnioPublicacion").Optional();
