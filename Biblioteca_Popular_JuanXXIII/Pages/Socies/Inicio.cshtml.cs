@@ -10,26 +10,28 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 
-
 namespace Biblioteca_Popular_JuanXXIII.Pages.Socies;
 
 [Authorize(Roles = "Administrador, Bibliotecario")]
 public class InicioModel : PageModel
 {
-   
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+    private readonly ApplicationDbContext _context;
+    private readonly UserManager<IdentityUser> _userManager;
 
-       
-        public InicioModel(ApplicationDbContext context, UserManager<IdentityUser> userManager)
-        {
-            _context = context;
-            _userManager = userManager;
-        }
+    public InicioModel(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+    {
+        _context = context;
+        _userManager = userManager;
+    }
 
-        public IList<Socio> Socio { get; set; } = default!;
+    public IList<Socio> Socio { get; set; } = default!;
+
     [BindProperty(SupportsGet = true)]
     public string Buscar { get; set; }
+
+    // --- NUEVO FILTRO DE ESTADO ---
+    [BindProperty(SupportsGet = true)]
+    public string FiltroEstado { get; set; } = "Activos";
 
     [BindProperty(SupportsGet = true)]
     public int PaginaActual { get; set; } = 1;
@@ -38,90 +40,90 @@ public class InicioModel : PageModel
 
     public async Task OnGetAsync()
     {
-
+        // 1. Empezamos la consulta general
         IQueryable<Socio> consulta = _context.Socios;
 
-        // 2. Si el usuario escribió algo en el buscador, filtramos
+        // 2. Aplicamos el filtro según lo que eligió el usuario en el menú desplegable
+        if (FiltroEstado == "Inactivos")
+        {
+            consulta = consulta.Where(s => s.Activo == false);
+        }
+        else if (FiltroEstado == "Todos")
+        {
+            // No aplicamos filtro, mostramos todos
+        }
+        else
+        {
+            // Por defecto, mostramos solo los activos
+            consulta = consulta.Where(s => s.Activo == true);
+        }
+
+        // 3. Si el usuario escribió algo en el buscador, filtramos
         if (!string.IsNullOrEmpty(Buscar))
         {
-            // Pasamos el texto ingresado a minúsculas
             var terminoBusqueda = Buscar.ToLower();
-
-            // Comparamos convirtiendo también los campos de la base a minúsculas
             consulta = consulta.Where(s => s.Nombre.ToLower().Contains(terminoBusqueda) ||
                                            s.Apellido.ToLower().Contains(terminoBusqueda) ||
                                            s.DniCarnet.Contains(terminoBusqueda));
         }
 
-        // 3. Calculamos la paginación basados en lo que quedó filtrado
+        // 4. Calculamos la paginación basados en lo que quedó filtrado
         var cantidadTotal = await consulta.CountAsync();
         TotalPaginas = (int)Math.Ceiling(cantidadTotal / (double)RegistrosPorPagina);
 
-        // Asegurarnos de que no estemos en una página que no existe
         if (PaginaActual < 1) PaginaActual = 1;
         if (PaginaActual > TotalPaginas && TotalPaginas > 0) PaginaActual = TotalPaginas;
 
-        // 4. Recortamos los registros correspondientes y ejecutamos
         Socio = await consulta
             .OrderBy(s => s.Apellido)
             .Skip((PaginaActual - 1) * RegistrosPorPagina)
             .Take(RegistrosPorPagina)
             .ToListAsync();
     }
-   
-    public async Task<IActionResult> OnPostImportarAsync(IFormFile archivoCsv)
-        {
-            if (archivoCsv == null || archivoCsv.Length == 0)
-            {
-                return RedirectToPage();
-            }
 
-        // Cambiamos InvariantCulture por "es-AR" para que entienda el formato de fecha dd/MM/yyyy
+    public async Task<IActionResult> OnPostImportarAsync(IFormFile archivoCsv)
+    {
+        if (archivoCsv == null || archivoCsv.Length == 0)
+        {
+            return RedirectToPage();
+        }
+
         var config = new CsvConfiguration(new CultureInfo("es-AR"))
         {
-            Delimiter = ";", // <--- ¡ESTE ES EL CAMBIO CLAVE!
+            Delimiter = ";",
             HasHeaderRecord = true
         };
+
         using (var stream = new StreamReader(archivoCsv.OpenReadStream()))
-            using (var csv = new CsvReader(stream, config))
+        using (var csv = new CsvReader(stream, config))
+        {
+            csv.Context.RegisterClassMap<SocioMap>();
+            var records = csv.GetRecords<Socio>().ToList();
+
+            foreach (var socio in records)
             {
-                // Le decimos a CsvHelper que use nuestras reglas de nombres
-                csv.Context.RegisterClassMap<SocioMap>();
+                var existeSocio = await _context.Socios.AnyAsync(s => s.DniCarnet == socio.DniCarnet);
 
-                // Ahora sí, lee y convierte todo de una
-                var records = csv.GetRecords<Socio>().ToList();
-
-                foreach (var socio in records)
+                if (!existeSocio)
                 {
-                    // Verificamos si el DNI ya existe para no duplicar ni que explote la base
-                    var existeSocio = await _context.Socios.AnyAsync(s => s.DniCarnet == socio.DniCarnet);
+                    _context.Socios.Add(socio);
+                    await _context.SaveChangesAsync();
 
-                    if (!existeSocio)
+                    var stringDni = socio.DniCarnet.ToString();
+                    var nuevoUsuario = new IdentityUser { UserName = stringDni };
+                    var resultado = await _userManager.CreateAsync(nuevoUsuario, stringDni);
+
+                    if (resultado.Succeeded)
                     {
-                        // 1. Guardamos el socio en tu tabla
-                        _context.Socios.Add(socio);
-                        await _context.SaveChangesAsync();
-
-                        // 2. Le creamos la cuenta en el sistema de seguridad
-                        var stringDni = socio.DniCarnet.ToString();
-                        var nuevoUsuario = new IdentityUser { UserName = stringDni };
-
-                        // Crea el usuario con el DNI como contraseña
-                        var resultado = await _userManager.CreateAsync(nuevoUsuario, stringDni);
-
-                        if (resultado.Succeeded)
-                        {
-                            // Lo asignamos al rol de Socio
-                            await _userManager.AddToRoleAsync(nuevoUsuario, "Socio");
-                        }
+                        await _userManager.AddToRoleAsync(nuevoUsuario, "Socio");
                     }
                 }
             }
-
-            return RedirectToPage();
         }
-    
-   
+
+        return RedirectToPage();
+    }
+
     public async Task<IActionResult> OnPostGenerarLoteAsync()
     {
         string mesActual = DateTime.Now.ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-AR"));
@@ -151,30 +153,40 @@ public class InicioModel : PageModel
         await _context.SaveChangesAsync();
         return RedirectToPage("./Inicio");
     }
+
     public async Task<IActionResult> OnPostDeleteAsync(int id)
     {
-        // 1. Buscamos al socie en la base de datos (asumiendo que la clave primaria se llama Id)
         var socio = await _context.Socios.FindAsync(id);
 
         if (socio != null)
         {
-            // 2. (Recomendado) Buscamos su usuario de acceso por el DNI y lo eliminamos
-            // para que no quede la cuenta de alguien que ya no es socie.
             var usuarioSocio = await _userManager.FindByNameAsync(socio.DniCarnet.ToString());
             if (usuarioSocio != null)
             {
                 await _userManager.DeleteAsync(usuarioSocio);
             }
 
-            // 3. Lo borramos de la tabla física
             _context.Socios.Remove(socio);
             await _context.SaveChangesAsync();
         }
 
-        // 4. ¡La instrucción clave para recargar la lista de forma segura!
+        return RedirectToPage();
+    }
+
+    // --- NUEVO MÉTODO PARA REACTIVAR ---
+    public async Task<IActionResult> OnPostReactivarAsync(int id)
+    {
+        var socio = await _context.Socios.FindAsync(id);
+        if (socio != null)
+        {
+            // Lo volvemos a poner como activo
+            socio.Activo = true;
+            await _context.SaveChangesAsync();
+        }
         return RedirectToPage();
     }
 }
+
 public class SocioMap : ClassMap<Socio>
 {
     public SocioMap()
@@ -183,7 +195,6 @@ public class SocioMap : ClassMap<Socio>
         Map(m => m.Apellido).Name("Apellido");
         Map(m => m.Nombre).Name("Nombre");
 
-        // Le decimos explícitamente: si viene vacío (""), tomalo como Nulo
         Map(m => m.FechaNacimiento).Name("Fecha_Nacimiento")
             .TypeConverterOption.NullValues("")
             .Optional();
@@ -192,7 +203,6 @@ public class SocioMap : ClassMap<Socio>
         Map(m => m.Telefono).Name("Telefono").Optional();
         Map(m => m.Direccion).Name("Direccion").Optional();
 
-        // Hacemos lo mismo con las otras fechas por si alguna viene vacía
         Map(m => m.FechaAlta).Name("Fecha_Alta")
             .TypeConverterOption.NullValues("")
             .Optional();
@@ -204,7 +214,4 @@ public class SocioMap : ClassMap<Socio>
         Map(m => m.Categoria).Name("Categoria").Optional();
         Map(m => m.Genero).Name("Genero").Optional();
     }
-
-
 }
-

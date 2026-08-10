@@ -9,69 +9,70 @@
     <a asp-page="Alta" class="btn btn-primary shadow-sm">
         <i class="bi bi-person-plus-fill me-1"></i> Alta Socio
     </a>
-  
 </div>
 
- <div class="card shadow-sm border-0">
+<div class="card shadow-sm border-0">
     <div class="card-body p-0 table-responsive">
-       
-        <form method="get" class="mb-4">
+
+        <form method="get" class="mb-4 pt-3 px-3">
             <div class="row g-2 align-items-center">
-                <div class="col-auto">
-                    <label class="col-form-label fw-bold">Buscar Socio:</label>
-                </div>
+
                 <div class="col-md-5">
-                    <!-- asp-for="Buscar" conecta este input con tu variable en C# -->
+                    <label class="col-form-label fw-bold text-muted small mb-1">Buscar Socio:</label>
                     <input type="text" class="form-control shadow-sm" asp-for="Buscar" placeholder="DNI, Nombre o Apellido..." />
                 </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-primary shadow-sm"><i class="bi bi-search"></i> Buscar</button>
+
+                <!-- NUEVO MENÚ DESPLEGABLE DE FILTRO -->
+                <div class="col-md-3">
+                    <label class="col-form-label fw-bold text-muted small mb-1">Estado:</label>
+                    <select name="FiltroEstado" class="form-select shadow-sm" onchange="this.form.submit()">
+                        <option value="Activos" selected="@(Model.FiltroEstado == "Activos")">Solo Activos</option>
+                        <option value="Inactivos" selected="@(Model.FiltroEstado == "Inactivos")">Dados de Baja</option>
+                        <option value="Todos" selected="@(Model.FiltroEstado == "Todos")">Mostrar Todos</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 align-self-end">
+                    <button type="submit" class="btn btn-primary shadow-sm"><i class="bi bi-search"></i> Filtrar</button>
                     <a asp-page="./Inicio" class="btn btn-outline-secondary shadow-sm">Limpiar</a>
                 </div>
             </div>
         </form>
+
         <table class="table table-hover table-striped align-middle mb-0">
-           
             <thead class="table-dark">
                 <tr>
                     <th class="ps-4">DNI / Carnet</th>
                     <th>Socie</th>
                     <th>Categoría</th>
-                    <th>Estado Cuota</th> <!-- Columna Nueva -->
-                    <th>Activo</th>
+                    <th>Estado Cuota</th>
                     <th class="text-end pe-4">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model.Socio)
                 {
-
-                    // LÓGICA DEL SEMÁFORO DEL EXCEL PARA LA CUOTA
                     string claseColorCuota = "bg-secondary";
                     string textoCuota = "Sin registrar";
                     string fechaTexto = "";
 
                     if (item.FechaVencimiento.HasValue)
                     {
-                        // Calculamos cuántos días pasaron desde el vencimiento hasta hoy
                         var diasVencidos = (DateTime.Today - item.FechaVencimiento.Value.Date).TotalDays;
                         fechaTexto = item.FechaVencimiento.Value.ToString("dd/MM/yy");
 
                         if (diasVencidos <= 0)
                         {
-                            // No venció o vence hoy (Verde)
                             claseColorCuota = "bg-success";
                             textoCuota = "Al día";
                         }
                         else if (diasVencidos <= 10)
                         {
-                            // Venció hace 10 días o menos (Amarillo)
                             claseColorCuota = "bg-warning text-dark";
                             textoCuota = "Alerta";
                         }
                         else
                         {
-                            // Pasaron más de 10 días (Rojo)
                             claseColorCuota = "bg-danger";
                             textoCuota = "Deuda";
                         }
@@ -89,8 +90,6 @@
                         <td>
                             <span class="badge border border-info text-info fs-7">@item.Categoria</span>
                         </td>
-
-                        <!-- LA COLUMNA DE LA CUOTA CON EL SEMÁFORO -->
                         <td>
                             <span class="badge @claseColorCuota shadow-sm" title="Vencimiento: @fechaTexto">
                                 @textoCuota
@@ -100,90 +99,86 @@
                                 <small class="d-block text-muted" style="font-size: 0.70rem;">Vence: @fechaTexto</small>
                             }
                         </td>
-
-                        <td>
+                        <td class="text-end pe-4">
+                            <!-- EVALUAMOS SI ESTÁ ACTIVO O NO PARA MOSTRAR LOS BOTONES -->
                             @if (item.Activo)
                             {
-                                <span class="text-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Sí</span>
+                                <a asp-page="./Detalles" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white shadow-sm" title="Ver detalles">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-page="./Editar" asp-route-id="@item.Id" class="btn btn-sm btn-secondary shadow-sm" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form method="post" asp-page-handler="Delete" asp-route-id="@item.Id" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger shadow-sm" onclick="return confirm('¿Estás seguro de que querés borrar/dar de baja a este socie?');" title="Dar de baja">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </form>
                             }
                             else
                             {
-                                <span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>No</span>
+                                <span class="badge bg-danger me-2">DADO DE BAJA</span>
+                                <form method="post" asp-page-handler="Reactivar" asp-route-id="@item.Id" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success shadow-sm" title="Volver a dar de alta al padrón">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Reactivar
+                                    </button>
+                                </form>
                             }
-                        </td>
-                        <td class="text-end pe-4">
-                            <a asp-page="./Detalles" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white" title="Ver detalles">
-                                <i class="bi bi-eye"></i>
-                            </a>
-                            <a asp-page="./Editar" asp-route-id="@item.Id" class="btn btn-sm btn-secondary" title="Editar">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <form method="post" asp-page-handler="Delete" asp-route-id="@item.Id" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-danger shadow-sm" onclick="return confirm('¿Estás seguro de que querés borrar a este socie?');">
-                                    <i class="bi bi-x-circle"></i> Borrar
-                                </button>
-                            </form>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
-       @if (Model.TotalPaginas > 1)
-{
-    // Calculamos el rango de páginas a mostrar (ventana de 5 páginas como máximo)
-    int maxPaginasVisibles = 5;
-    int paginaInicio = Math.Max(1, Model.PaginaActual - 2);
-    int paginaFin = Math.Min(Model.TotalPaginas, paginaInicio + maxPaginasVisibles - 1);
 
-    // Ajuste matemático por si el usuario está en las últimas páginas de la lista
-    paginaInicio = Math.Max(1, paginaFin - maxPaginasVisibles + 1);
+        <!-- PAGINACIÓN CON MEMORIA DE FILTROS -->
+        @if (Model.TotalPaginas > 1)
+        {
+            int maxPaginasVisibles = 5;
+            int paginaInicio = Math.Max(1, Model.PaginaActual - 2);
+            int paginaFin = Math.Min(Model.TotalPaginas, paginaInicio + maxPaginasVisibles - 1);
 
-    <nav aria-label="Navegación de páginas">
-        <ul class="pagination justify-content-center mt-4 shadow-sm">
-            
-            <!-- Botón Primera (Súper útil para volver rápido) -->
-            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="1" asp-route-Buscar="@Model.Buscar">
-                    <i class="bi bi-chevron-double-left"></i> Primera
-                </a>
-            </li>
+            paginaInicio = Math.Max(1, paginaFin - maxPaginasVisibles + 1);
 
-            <!-- Botón Anterior -->
-            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual - 1)" asp-route-Buscar="@Model.Buscar">
-                    <i class="bi bi-chevron-left"></i> Anterior
-                </a>
-            </li>
+            <nav aria-label="Navegación de páginas">
+                <ul class="pagination justify-content-center mt-4 shadow-sm">
 
-            <!-- Números de página con ventana dinámica -->
-            @for (int i = paginaInicio; i <= paginaFin; i++)
-            {
-                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                    <a class="page-link" asp-route-PaginaActual="@i" asp-route-Buscar="@Model.Buscar">@i</a>
-                </li>
-            }
+                    <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-route-PaginaActual="1" asp-route-Buscar="@Model.Buscar" asp-route-FiltroEstado="@Model.FiltroEstado">
+                            <i class="bi bi-chevron-double-left"></i> Primera
+                        </a>
+                    </li>
 
-            <!-- Botón Siguiente -->
-            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual + 1)" asp-route-Buscar="@Model.Buscar">
-                    Siguiente <i class="bi bi-chevron-right"></i>
-                </a>
-            </li>
-            
-            <!-- Botón Última -->
-            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@Model.TotalPaginas" asp-route-Buscar="@Model.Buscar">
-                    Última <i class="bi bi-chevron-double-right"></i>
-                </a>
-            </li>
-            
-        </ul>
-    </nav>
-    
-    <!-- Muestra informativa opcional para no perderse -->
-    <div class="text-center text-muted small mt-2">
-        Página @Model.PaginaActual de @Model.TotalPaginas
-    </div>
-}
+                    <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual - 1)" asp-route-Buscar="@Model.Buscar" asp-route-FiltroEstado="@Model.FiltroEstado">
+                            <i class="bi bi-chevron-left"></i> Anterior
+                        </a>
+                    </li>
+
+                    @for (int i = paginaInicio; i <= paginaFin; i++)
+                    {
+                        <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                            <a class="page-link" asp-route-PaginaActual="@i" asp-route-Buscar="@Model.Buscar" asp-route-FiltroEstado="@Model.FiltroEstado">@i</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                        <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual + 1)" asp-route-Buscar="@Model.Buscar" asp-route-FiltroEstado="@Model.FiltroEstado">
+                            Siguiente <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+
+                    <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                        <a class="page-link" asp-route-PaginaActual="@Model.TotalPaginas" asp-route-Buscar="@Model.Buscar" asp-route-FiltroEstado="@Model.FiltroEstado">
+                            Última <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+
+            <div class="text-center text-muted small mt-2 pb-3">
+                Página @Model.PaginaActual de @Model.TotalPaginas
+            </div>
+        }
     </div>
 </div>

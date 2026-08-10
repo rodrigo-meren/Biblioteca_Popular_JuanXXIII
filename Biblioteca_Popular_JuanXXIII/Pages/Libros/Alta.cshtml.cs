@@ -23,10 +23,11 @@ public class AltaModel : PageModel
     [BindProperty]
     public Libro Libro { get; set; } = default!;
 
-   
-    public async Task<IActionResult> OnGetAsync()
+
+    // Agregamos el parámetro int? idDuplicar
+    public async Task<IActionResult> OnGetAsync(int? idDuplicar)
     {
-        // Buscamos el último código usado apenas el bibliotecario entra a la página
+        // 1. Calculamos el próximo número de inventario siempre
         var codigos = await _context.Libros
             .Select(l => l.CodigoInventario)
             .ToListAsync();
@@ -39,7 +40,32 @@ public class AltaModel : PageModel
 
         int proximoNumero = Math.Max(maxInventario, 12067) + 1;
 
-        // Se lo asignamos al modelo para que el HTML lo muestre
+        // 2. Verificamos si el bibliotecario quiere duplicar un libro existente
+        if (idDuplicar.HasValue)
+        {
+            var libroOriginal = await _context.Libros.FindAsync(idDuplicar.Value);
+
+            if (libroOriginal != null)
+            {
+                // Copiamos los datos del viejo, pero le clavamos el inventario nuevo
+                Libro = new Libro
+                {
+                    CodigoInventario = proximoNumero.ToString(),
+                    Titulo = libroOriginal.Titulo,
+                    Autor = libroOriginal.Autor,
+                    Editorial = libroOriginal.Editorial,
+                    AnioPublicacion = libroOriginal.AnioPublicacion,
+                    ISBN = libroOriginal.ISBN,
+                    GeneroLiterario = libroOriginal.GeneroLiterario,
+                    UbicacionFisica = libroOriginal.UbicacionFisica,
+                    Sinopsis = libroOriginal.Sinopsis,
+                    UrlPortada = libroOriginal.UrlPortada
+                };
+                return Page();
+            }
+        }
+
+        // 3. Si no viene ningún ID para duplicar, creamos un formulario en blanco
         Libro = new Libro
         {
             CodigoInventario = proximoNumero.ToString()

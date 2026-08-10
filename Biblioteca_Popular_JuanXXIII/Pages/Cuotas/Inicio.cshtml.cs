@@ -64,7 +64,7 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Cuotas
         public async Task<IActionResult> OnPostGenerarLoteAsync()
         {
             string mesActual = DateTime.Now.ToString("MMMM yyyy", new CultureInfo("es-AR"));
-            decimal montoFijo = 1500.00m;
+            decimal montoFijo = 3000.00m;
 
             var sociesActivos = await _context.Socios.ToListAsync();
 
@@ -75,15 +75,21 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Cuotas
 
                 if (!yaTieneCuota)
                 {
-                    var nuevaCuota = new Cuota
+                    if (!(socio.Categoria == "Honorario" || socio.Categoria == "Vitalicio"))
                     {
-                        SocioId = socio.Id,
-                        Monto = montoFijo,
-                        MesCorrespondiente = mesActual,
-                        FechaVencimiento = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 10),
-                        Estado = "Pendiente"
-                    };
-                    _context.Cuotas.Add(nuevaCuota);
+                        var nuevaCuota = new Cuota
+                        {
+
+                            SocioId = socio.Id,
+                            Monto = montoFijo,
+                            MesCorrespondiente = mesActual,
+                            FechaVencimiento = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 10),
+                            Estado = "Pendiente"
+
+                        };
+
+                        _context.Cuotas.Add(nuevaCuota);
+                    }
                 }
             }
 

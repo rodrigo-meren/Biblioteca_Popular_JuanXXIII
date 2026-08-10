@@ -7,11 +7,12 @@ using MercadoPago.Resource.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 namespace Biblioteca_Popular_JuanXXIII.Pages.Libros;
 
 [AllowAnonymous]
@@ -92,9 +93,11 @@ public class InicioModel : PageModel
         {
             consulta = consulta.Where(l => l.GeneroLiterario == FiltroGenero);
         }
+        consulta = consulta.OrderBy(l => l.CodigoInventario.Length).ThenBy(l => l.CodigoInventario);
 
         // E. Paginación Matemática
         var cantidadTotal = await consulta.CountAsync();
+
         TotalPaginas = (int)Math.Ceiling(cantidadTotal / (double)RegistrosPorPagina);
 
         if (PaginaActual < 1) PaginaActual = 1;
@@ -102,7 +105,6 @@ public class InicioModel : PageModel
 
         // F. Guardamos en "Libro" y ejecutamos la consulta a la base de datos
         Libro = await consulta
-            .OrderBy(l => l.Titulo)
             .Skip((PaginaActual - 1) * RegistrosPorPagina)
             .Take(RegistrosPorPagina)
             .ToListAsync();

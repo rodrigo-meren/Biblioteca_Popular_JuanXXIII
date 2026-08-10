@@ -11,7 +11,7 @@
     </a>
 </div>
 
-<div class="card shadow-sm border-0">
+<div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-0 table-responsive">
         <table class="table table-hover table-striped align-middle mb-0">
             <thead class="table-dark">
@@ -26,34 +26,26 @@
             <tbody>
                 @foreach (var item in Model.Prestamo)
                 {
-
-                    // Lógica del Semáforo para Préstamos
-                    string claseEstado = "bg-secondary";
+                    // Lógica del Semáforo para Préstamos (Ya no evaluamos Devuelto porque no llegan acá)
+                    string claseEstado = "";
                     string textoEstado = item.Estado;
 
-                    if (item.Estado == "Devuelto")
-                    {
-                        claseEstado = "bg-secondary bg-opacity-75"; // Griscito para los que ya terminaron
-                    }
-                    else // Si está Vigente o Vencido, evaluamos la fecha
-                    {
-                        var diasRestantes = (item.FechaVencimiento.Date - DateTime.Today).TotalDays;
+                    var diasRestantes = (item.FechaVencimiento.Date - DateTime.Today).TotalDays;
 
-                        if (diasRestantes < 0)
-                        {
-                            claseEstado = "bg-danger";
-                            textoEstado = $"Vencido (hace {Math.Abs(diasRestantes)} días)";
-                        }
-                        else if (diasRestantes <= 3)
-                        {
-                            claseEstado = "bg-warning text-dark";
-                            textoEstado = $"Vence pronto (en {diasRestantes} días)";
-                        }
-                        else
-                        {
-                            claseEstado = "bg-success";
-                            textoEstado = "Vigente";
-                        }
+                    if (diasRestantes < 0)
+                    {
+                        claseEstado = "bg-danger";
+                        textoEstado = $"Vencido (hace {Math.Abs(diasRestantes)} días)";
+                    }
+                    else if (diasRestantes <= 3)
+                    {
+                        claseEstado = "bg-warning text-dark";
+                        textoEstado = $"Vence pronto (en {diasRestantes} días)";
+                    }
+                    else
+                    {
+                        claseEstado = "bg-success";
+                        textoEstado = "Vigente";
                     }
 
                     <tr>
@@ -93,16 +85,13 @@
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <!-- BOTÓN DE DEVOLUCIÓN RÁPIDA -->
-                            @if (item.Estado != "Devuelto")
-                            {
-                                <form method="post" asp-page-handler="Devolver" asp-route-id="@item.Id" class="d-inline me-1">
-                                    <button type="submit" class="btn btn-sm btn-success shadow-sm"
-                                            onclick="return confirm('¿Confirmar la devolución de este libro? Quedará disponible en el catálogo automáticamente.');"
-                                            title="Registrar Devolución Rápida">
-                                        <i class="bi bi-box-arrow-in-down"></i>
-                                    </button>
-                                </form>
-                            }
+                            <form method="post" asp-page-handler="Devolver" asp-route-id="@item.Id" class="d-inline me-1">
+                                <button type="submit" class="btn btn-sm btn-success shadow-sm"
+                                        onclick="return confirm('¿Confirmar la devolución de este libro? Quedará disponible en el catálogo automáticamente.');"
+                                        title="Registrar Devolución Rápida">
+                                    <i class="bi bi-box-arrow-in-down"></i>
+                                </button>
+                            </form>
                             <!-- Botón de Borrado con advertencia -->
                             <form method="post" asp-page-handler="Eliminar" asp-route-id="@item.Id" class="d-inline">
                                 <button type="submit" class="btn btn-sm btn-danger"
@@ -113,7 +102,69 @@
                         </td>
                     </tr>
                 }
+                @if (!Model.Prestamo.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <i class="bi bi-info-circle me-1"></i> No hay préstamos activos en este momento.
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>
 </div>
+
+<!-- CONTROLES DE PAGINACIÓN -->
+@if (Model.TotalPaginas > 1)
+{
+    int maxPaginasVisibles = 5;
+    int paginaInicio = Math.Max(1, Model.PaginaActual - 2);
+    int paginaFin = Math.Min(Model.TotalPaginas, paginaInicio + maxPaginasVisibles - 1);
+
+    paginaInicio = Math.Max(1, paginaFin - maxPaginasVisibles + 1);
+
+    <nav aria-label="Navegación de páginas">
+        <ul class="pagination justify-content-center mt-4 shadow-sm">
+
+            <!-- Botón Primera -->
+            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="1">
+                    <i class="bi bi-chevron-double-left"></i> Primera
+                </a>
+            </li>
+
+            <!-- Botón Anterior -->
+            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual - 1)">
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </a>
+            </li>
+
+            <!-- Números de página -->
+            @for (int i = paginaInicio; i <= paginaFin; i++)
+            {
+                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                    <a class="page-link" asp-route-PaginaActual="@i">@i</a>
+                </li>
+            }
+
+            <!-- Botón Siguiente -->
+            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual + 1)">
+                    Siguiente <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+
+            <!-- Botón Última -->
+            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                <a class="page-link" asp-route-PaginaActual="@Model.TotalPaginas">
+                    Última <i class="bi bi-chevron-double-right"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <div class="text-center text-muted small mt-2">
+        Página @Model.PaginaActual de @Model.TotalPaginas
+    </div>
+}

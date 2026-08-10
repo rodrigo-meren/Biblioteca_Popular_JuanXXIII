@@ -17,15 +17,36 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
 
         public IList<Prestamo> Prestamo { get; set; } = default!;
 
+        // --- PROPIEDADES PARA PAGINACIÓN ---
+        [BindProperty(SupportsGet = true)]
+        public int PaginaActual { get; set; } = 1;
+        public int TotalPaginas { get; set; }
+        public int RegistrosPorPagina { get; set; } = 15; // Podés ajustar la cantidad de filas por página acá
+
         public async Task OnGetAsync()
         {
             if (_context.Prestamos != null)
             {
-                // Traemos los datos con los Include para armar la tabla
-                Prestamo = await _context.Prestamos
+                // 1. Empezamos la consulta excluyendo los ya devueltos
+                IQueryable<Prestamo> consulta = _context.Prestamos
                     .Include(p => p.Socio)
                     .Include(p => p.Libro)
-                    .OrderByDescending(p => p.FechaPrestamo)
+                    .Where(p => p.Estado != "Devuelto");
+
+                // 2. Ordenamos por prioridad de devolución (los más próximos a vencer o vencidos van primero)
+                consulta = consulta.OrderBy(p => p.FechaVencimiento);
+
+                // 3. Lógica matemática de la Paginación
+                var cantidadTotal = await consulta.CountAsync();
+                TotalPaginas = (int)Math.Ceiling(cantidadTotal / (double)RegistrosPorPagina);
+
+                if (PaginaActual < 1) PaginaActual = 1;
+                if (PaginaActual > TotalPaginas && TotalPaginas > 0) PaginaActual = TotalPaginas;
+
+                // 4. Ejecutamos la consulta con el Skip y Take
+                Prestamo = await consulta
+                    .Skip((PaginaActual - 1) * RegistrosPorPagina)
+                    .Take(RegistrosPorPagina)
                     .ToListAsync();
             }
         }
@@ -42,8 +63,7 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                 prestamo.FechaDevolucion = DateTime.Now;
                 var libro = await _context.Libros.FindAsync(prestamo.LibroId);
 
-                // 2. Buscamos si hay alguien en cola (En Espera) para este mismo libro.
-                // Usamos OrderBy para darle prioridad al que lo reservó primero.
+                // Buscamos si hay alguien en cola (En Espera) para este mismo libro.
                 var reservaPendiente = await _context.Reservas
                     .Where(r => r.LibroId == libro.Id && r.Estado == "En Espera")
                     .OrderBy(r => r.FechaSolicitud)
@@ -53,8 +73,6 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                 {
                     // ¡Hay alguien esperando! El libro NO vuelve al catálogo público.
                     libro.Disponible = false;
-
-                    // Le cambiamos el estado a la reserva y le damos 48hs de límite para buscarlo
                     reservaPendiente.Estado = "Pendiente de retiro";
                     reservaPendiente.FechaLimiteRetiro = DateTime.Now.AddDays(2);
                 }
@@ -67,6 +85,30 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                 await _context.SaveChangesAsync();
             }
 
+            return RedirectToPage("./Inicio");
+        }
+        // --- MÉTODO PARA ELIMINAR UN PRÉSTAMO ---
+        public async Task<IActionResult> OnPostEliminarAsync(int id)
+        {
+            var prestamo = await _context.Prestamos.FindAsync(id);
+
+            if (prestamo != null)
+            {
+                // Si eliminamos un préstamo que estaba activo, devolvemos el libro a la biblioteca
+                if (prestamo.Estado != "Devuelto")
+                {
+                    var libro = await _context.Libros.FindAsync(prestamo.LibroId);
+                    if (libro != null)
+                    {
+                        libro.Disponible = true;
+                    }
+                }
+
+                _context.Prestamos.Remove(prestamo);
+                await _context.SaveChangesAsync();
+            }
+
+            // Esto es clave: redirige a Inicio para que se vuelva a ejecutar OnGetAsync y llene la tabla
             return RedirectToPage("./Inicio");
         }
     }

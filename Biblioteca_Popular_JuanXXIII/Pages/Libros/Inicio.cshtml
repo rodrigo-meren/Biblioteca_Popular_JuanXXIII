@@ -146,6 +146,9 @@
                                 <a class="btn btn-sm btn-outline-secondary shadow-sm" asp-page="./Editar" asp-route-id="@item.Id" title="Editar">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                <a asp-page="/Libros/Alta" asp-route-idDuplicar="@item.Id" class="btn btn-sm btn-info text-white" title="Duplicar Libro">
+                                    <i class="bi bi-copy"></i> Duplicar
+                                </a>
                                 <form method="post" asp-page-handler="Eliminar" asp-route-id="@item.Id" class="d-inline">
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que querés borrar este libro definitivamente?');">
                                         <i class="bi bi-trash"></i> Eliminar
