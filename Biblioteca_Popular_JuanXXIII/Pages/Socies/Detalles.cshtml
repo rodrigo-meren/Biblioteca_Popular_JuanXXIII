@@ -231,7 +231,43 @@
                             }
                         </tbody>
                     </table>
+                            
                 </div>
+            </div> <!-- Acá termina el div del card-body donde está tu tabla actual -->
+            <!-- NUEVO BLOQUE: PAGINACIÓN DE PRÉSTAMOS -->
+            @if (Model.TotalPaginasPrestamos > 1)
+            {
+                <div class="card-footer bg-light d-flex justify-content-center py-2 border-top-0">
+                    <nav aria-label="Paginación de historial">
+                        <ul class="pagination pagination-sm mb-0 shadow-sm">
+
+                            <!-- Botón Anterior -->
+                            <li class="page-item @(Model.PaginaActualPrestamos == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-route-id="@Model.Socio.Id" asp-route-paginaPrestamos="@(Model.PaginaActualPrestamos - 1)">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            <!-- Números de Página -->
+                            @for (int i = 1; i <= Model.TotalPaginasPrestamos; i++)
+                            {
+                                <li class="page-item @(i == Model.PaginaActualPrestamos ? "active" : "")">
+                                    <a class="page-link" asp-route-id="@Model.Socio.Id" asp-route-paginaPrestamos="@i">@i</a>
+                                </li>
+                            }
+
+                            <!-- Botón Siguiente -->
+                            <li class="page-item @(Model.PaginaActualPrestamos == Model.TotalPaginasPrestamos ? "disabled" : "")">
+                                <a class="page-link" asp-route-id="@Model.Socio.Id" asp-route-paginaPrestamos="@(Model.PaginaActualPrestamos + 1)">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                </div>
+            }
+        </div> <!-- Acá termina el card principal del historial -->
             </div>
 
             <!-- Botones actualizados y alineados a la derecha -->
