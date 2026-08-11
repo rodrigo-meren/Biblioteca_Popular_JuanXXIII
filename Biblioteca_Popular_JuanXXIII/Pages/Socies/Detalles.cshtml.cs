@@ -1,4 +1,3 @@
-using Biblioteca_Popular_JuanXXIII;
 using Biblioteca_Popular_JuanXXIII.Data;
 using Biblioteca_Popular_JuanXXIII.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -15,9 +14,11 @@ public class DetallesModel : PageModel
         _context = context;
     }
 
-    // Asegurate de tener estas propiedades
     public Socio Socio { get; set; } = default!;
     public IList<Cuota> Cuotas { get; set; } = default!;
+
+    // 1. Agregamos la lista de préstamos al modelo
+    public IList<Prestamo> Prestamos { get; set; } = default!;
 
     public async Task<IActionResult> OnGetAsync(int? id)
     {
@@ -33,10 +34,16 @@ public class DetallesModel : PageModel
             .OrderByDescending(c => c.FechaVencimiento)
             .ToListAsync();
 
+        // 2. Traemos los préstamos de ESTE socie, incluyendo el Libro para ver el Título
+        Prestamos = await _context.Prestamos
+            .Include(p => p.Libro)
+            .Where(p => p.SocioId == id)
+            .OrderByDescending(p => p.FechaPrestamo)
+            .ToListAsync();
+
         return Page();
     }
 
-    // Método para cobrar una cuota desde el detalle
     public async Task<IActionResult> OnPostRegistrarPagoAsync(int cuotaId, int socioId)
     {
         var cuota = await _context.Cuotas.FindAsync(cuotaId);
@@ -46,7 +53,6 @@ public class DetallesModel : PageModel
             cuota.FechaPago = DateTime.Now;
             await _context.SaveChangesAsync();
         }
-        // Recargamos la misma página del socie
         return RedirectToPage(new { id = socioId });
     }
 }

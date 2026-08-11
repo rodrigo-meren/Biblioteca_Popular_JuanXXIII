@@ -6,16 +6,25 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="text-success fw-bold"><i class="bi bi-graph-up-arrow"></i> Contabilidad y Cuotas</h1>
-    
-    <!-- Botón Mágico del Lote Mensual -->
-    <form method="post" asp-page-handler="GenerarLote" class="m-0">
-        <button type="submit" class="btn btn-primary shadow-sm fw-bold" 
-                onclick="return confirm('¿Estás seguro de generar el lote de cuotas para el mes actual?');">
-            <i class="bi bi-magic me-1"></i> Generar Lote del Mes
-        </button>
-    </form>
-</div>
 
+    <div class="d-flex gap-2">
+        <!-- BOTÓN TEMPORAL DE LIMPIEZA -->
+        <form method="post" asp-page-handler="ResetearCero" class="m-0">
+            <button type="submit" class="btn btn-outline-danger shadow-sm fw-bold"
+                    onclick="return confirm('¿Seguro que querés borrar todas las cuotas pendientes? Esto dejará la deuda total en $0 para hacer limpieza de socios.');">
+                <i class="bi bi-trash3 me-1"></i> Resetear a $0
+            </button>
+        </form>
+
+        <!-- Botón Mágico del Lote Mensual -->
+        <form method="post" asp-page-handler="GenerarLote" class="m-0">
+            <button type="submit" class="btn btn-primary shadow-sm fw-bold"
+                    onclick="return confirm('¿Estás seguro de generar el lote de cuotas de $3000 para el mes actual?');">
+                <i class="bi bi-magic me-1"></i> Generar Lote del Mes
+            </button>
+        </form>
+    </div>
+</div>
 <!-- TARJETAS DE ESTADÍSTICAS -->
 <div class="row g-4 mb-4">
     <div class="col-md-3">

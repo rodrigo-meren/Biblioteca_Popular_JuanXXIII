@@ -96,5 +96,20 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Cuotas
             await _context.SaveChangesAsync();
             return RedirectToPage("./Inicio");
         }
+        public async Task<IActionResult> OnPostResetearCeroAsync()
+        {
+            // Buscamos todas las cuotas que se hayan generado y estén pendientes o vencidas
+            var cuotasPendientes = await _context.Cuotas
+                .Where(c => c.Estado == "Pendiente" || c.Estado == "Vencida")
+                .ToListAsync();
+
+            // Las eliminamos masivamente. Esto deja la deuda total en $0 
+            // y libera a los socios para que el bibliotecario los pueda borrar/limpiar tranquilo.
+            _context.Cuotas.RemoveRange(cuotasPendientes);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage("./Inicio");
+        }
     }
 }
