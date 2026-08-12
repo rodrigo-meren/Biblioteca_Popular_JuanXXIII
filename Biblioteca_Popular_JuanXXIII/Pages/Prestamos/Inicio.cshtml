@@ -11,6 +11,19 @@
     </a>
 </div>
 
+<!-- NUEVO BUSCADOR -->
+<form method="get" class="mb-4">
+    <div class="input-group shadow-sm">
+        <span class="input-group-text bg-white text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" asp-for="BuscarTexto" class="form-control border-start-0" placeholder="Buscar por título de libro o nombre/apellido del socio..." autocomplete="off" />
+        <button type="submit" class="btn btn-primary px-4 fw-bold">Buscar</button>
+        @if (!string.IsNullOrEmpty(Model.BuscarTexto))
+        {
+            <a asp-page="./Inicio" class="btn btn-outline-secondary">Limpiar Filtro</a>
+        }
+    </div>
+</form>
+
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-body p-0 table-responsive">
         <table class="table table-hover table-striped align-middle mb-0">
@@ -26,7 +39,6 @@
             <tbody>
                 @foreach (var item in Model.Prestamo)
                 {
-                    // Lógica del Semáforo para Préstamos (Ya no evaluamos Devuelto porque no llegan acá)
                     string claseEstado = "";
                     string textoEstado = item.Estado;
 
@@ -84,7 +96,6 @@
                             <a asp-page="./Editar" asp-route-id="@item.Id" class="btn btn-sm btn-secondary" title="Modificar/Renovar">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <!-- BOTÓN DE DEVOLUCIÓN RÁPIDA -->
                             <form method="post" asp-page-handler="Devolver" asp-route-id="@item.Id" class="d-inline me-1">
                                 <button type="submit" class="btn btn-sm btn-success shadow-sm"
                                         onclick="return confirm('¿Confirmar la devolución de este libro? Quedará disponible en el catálogo automáticamente.');"
@@ -92,7 +103,6 @@
                                     <i class="bi bi-box-arrow-in-down"></i>
                                 </button>
                             </form>
-                            <!-- Botón de Borrado con advertencia -->
                             <form method="post" asp-page-handler="Eliminar" asp-route-id="@item.Id" class="d-inline">
                                 <button type="submit" class="btn btn-sm btn-danger"
                                         onclick="return confirm('¿Estás segure de querer eliminar este registro de préstamo?');" title="Eliminar registro">
@@ -106,7 +116,7 @@
                 {
                     <tr>
                         <td colspan="5" class="text-center py-4 text-muted">
-                            <i class="bi bi-info-circle me-1"></i> No hay préstamos activos en este momento.
+                            <i class="bi bi-info-circle me-1"></i> No se encontraron préstamos activos.
                         </td>
                     </tr>
                 }
@@ -121,7 +131,6 @@
     int maxPaginasVisibles = 5;
     int paginaInicio = Math.Max(1, Model.PaginaActual - 2);
     int paginaFin = Math.Min(Model.TotalPaginas, paginaInicio + maxPaginasVisibles - 1);
-
     paginaInicio = Math.Max(1, paginaFin - maxPaginasVisibles + 1);
 
     <nav aria-label="Navegación de páginas">
@@ -129,14 +138,14 @@
 
             <!-- Botón Primera -->
             <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="1">
+                <a class="page-link" asp-route-PaginaActual="1" asp-route-BuscarTexto="@Model.BuscarTexto">
                     <i class="bi bi-chevron-double-left"></i> Primera
                 </a>
             </li>
 
             <!-- Botón Anterior -->
             <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual - 1)">
+                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual - 1)" asp-route-BuscarTexto="@Model.BuscarTexto">
                     <i class="bi bi-chevron-left"></i> Anterior
                 </a>
             </li>
@@ -145,20 +154,20 @@
             @for (int i = paginaInicio; i <= paginaFin; i++)
             {
                 <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
-                    <a class="page-link" asp-route-PaginaActual="@i">@i</a>
+                    <a class="page-link" asp-route-PaginaActual="@i" asp-route-BuscarTexto="@Model.BuscarTexto">@i</a>
                 </li>
             }
 
             <!-- Botón Siguiente -->
             <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual + 1)">
+                <a class="page-link" asp-route-PaginaActual="@(Model.PaginaActual + 1)" asp-route-BuscarTexto="@Model.BuscarTexto">
                     Siguiente <i class="bi bi-chevron-right"></i>
                 </a>
             </li>
 
             <!-- Botón Última -->
             <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
-                <a class="page-link" asp-route-PaginaActual="@Model.TotalPaginas">
+                <a class="page-link" asp-route-PaginaActual="@Model.TotalPaginas" asp-route-BuscarTexto="@Model.BuscarTexto">
                     Última <i class="bi bi-chevron-double-right"></i>
                 </a>
             </li>

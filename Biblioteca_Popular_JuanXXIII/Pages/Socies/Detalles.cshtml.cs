@@ -62,4 +62,34 @@ public class DetallesModel : PageModel
 
         return Page();
     }
+    // ==========================================
+    // DEVOLUCIÓN RÁPIDA DE LIBRO DESDE LA FICHA
+    // ==========================================
+    public async Task<IActionResult> OnPostDevolverLibroAsync(int prestamoId, int socioId)
+    {
+        // Buscamos el préstamo y traemos también el libro asociado
+        var prestamo = await _context.Prestamos
+            .Include(p => p.Libro)
+            .FirstOrDefaultAsync(p => p.Id == prestamoId);
+
+        if (prestamo != null && prestamo.Estado != "Devuelto")
+        {
+            // 1. Actualizamos el préstamo
+            prestamo.Estado = "Devuelto";
+            prestamo.FechaDevolucion = DateTime.Now;
+
+            // 2. Liberamos el libro para que vuelva al catálogo
+            if (prestamo.Libro != null)
+            {
+                prestamo.Libro.Disponible = true;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["MensajeExito"] = $"El libro '{prestamo.Libro?.Titulo}' fue devuelto al inventario correctamente.";
+        }
+
+        // Recargamos la ficha del socie
+        return RedirectToPage(new { id = socioId });
+    }
 }

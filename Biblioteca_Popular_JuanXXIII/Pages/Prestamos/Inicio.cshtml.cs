@@ -17,11 +17,15 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
 
         public IList<Prestamo> Prestamo { get; set; } = default!;
 
+        // --- NUEVA PROPIEDAD PARA EL BUSCADOR ---
+        [BindProperty(SupportsGet = true)]
+        public string BuscarTexto { get; set; }
+
         // --- PROPIEDADES PARA PAGINACIÓN ---
         [BindProperty(SupportsGet = true)]
         public int PaginaActual { get; set; } = 1;
         public int TotalPaginas { get; set; }
-        public int RegistrosPorPagina { get; set; } = 15; // Podés ajustar la cantidad de filas por página acá
+        public int RegistrosPorPagina { get; set; } = 15;
 
         public async Task OnGetAsync()
         {
@@ -33,17 +37,27 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                     .Include(p => p.Libro)
                     .Where(p => p.Estado != "Devuelto");
 
-                // 2. Ordenamos por prioridad de devolución (los más próximos a vencer o vencidos van primero)
+                // 2. Filtro del Buscador (Título del libro o Nombre/Apellido del socio)
+                if (!string.IsNullOrEmpty(BuscarTexto))
+                {
+                    var termino = BuscarTexto.ToLower();
+                    consulta = consulta.Where(p =>
+                        p.Libro.Titulo.ToLower().Contains(termino) ||
+                        p.Socio.Nombre.ToLower().Contains(termino) ||
+                        p.Socio.Apellido.ToLower().Contains(termino));
+                }
+
+                // 3. Ordenamos por prioridad de devolución (los más próximos a vencer o vencidos van primero)
                 consulta = consulta.OrderBy(p => p.FechaVencimiento);
 
-                // 3. Lógica matemática de la Paginación
+                // 4. Lógica matemática de la Paginación
                 var cantidadTotal = await consulta.CountAsync();
                 TotalPaginas = (int)Math.Ceiling(cantidadTotal / (double)RegistrosPorPagina);
 
                 if (PaginaActual < 1) PaginaActual = 1;
                 if (PaginaActual > TotalPaginas && TotalPaginas > 0) PaginaActual = TotalPaginas;
 
-                // 4. Ejecutamos la consulta con el Skip y Take
+                // 5. Ejecutamos la consulta con el Skip y Take
                 Prestamo = await consulta
                     .Skip((PaginaActual - 1) * RegistrosPorPagina)
                     .Take(RegistrosPorPagina)
@@ -63,7 +77,6 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                 prestamo.FechaDevolucion = DateTime.Now;
                 var libro = await _context.Libros.FindAsync(prestamo.LibroId);
 
-                // Buscamos si hay alguien en cola (En Espera) para este mismo libro.
                 var reservaPendiente = await _context.Reservas
                     .Where(r => r.LibroId == libro.Id && r.Estado == "En Espera")
                     .OrderBy(r => r.FechaSolicitud)
@@ -71,14 +84,12 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
 
                 if (reservaPendiente != null)
                 {
-                    // ¡Hay alguien esperando! El libro NO vuelve al catálogo público.
                     libro.Disponible = false;
                     reservaPendiente.Estado = "Pendiente de retiro";
                     reservaPendiente.FechaLimiteRetiro = DateTime.Now.AddDays(2);
                 }
                 else
                 {
-                    // Nadie lo reservó, el libro vuelve a la estantería normal
                     libro.Disponible = true;
                 }
 
@@ -87,14 +98,13 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
 
             return RedirectToPage("./Inicio");
         }
-        // --- MÉTODO PARA ELIMINAR UN PRÉSTAMO ---
+
         public async Task<IActionResult> OnPostEliminarAsync(int id)
         {
             var prestamo = await _context.Prestamos.FindAsync(id);
 
             if (prestamo != null)
             {
-                // Si eliminamos un préstamo que estaba activo, devolvemos el libro a la biblioteca
                 if (prestamo.Estado != "Devuelto")
                 {
                     var libro = await _context.Libros.FindAsync(prestamo.LibroId);
@@ -108,7 +118,6 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                 await _context.SaveChangesAsync();
             }
 
-            // Esto es clave: redirige a Inicio para que se vuelva a ejecutar OnGetAsync y llene la tabla
             return RedirectToPage("./Inicio");
         }
     }
