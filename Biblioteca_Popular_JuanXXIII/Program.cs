@@ -75,7 +75,9 @@ namespace Biblioteca_Popular_JuanXXIII
                 }
 
                 // 2. Crear Administrador por defecto si no existe
-                string adminDni = "34888336";
+                string adminDni = app.Configuration["AdminSetup:AdminDni"];
+                string adminPassword = app.Configuration["AdminSetup:AdminPassword"];
+
                 var adminUser = await userManager.FindByNameAsync(adminDni);
 
                 if (adminUser == null)
@@ -87,17 +89,16 @@ namespace Biblioteca_Popular_JuanXXIII
                         EmailConfirmed = true
                     };
 
-                    var result = await userManager.CreateAsync(adminUser, "Admin34888336");
+                   
+                    var result = await userManager.CreateAsync(adminUser, adminPassword);
                     if (result.Succeeded)
                     {
                         await userManager.AddToRoleAsync(adminUser, "Administrador");
                     }
                 }
-
-
             }
 
-            app.Run();
+                app.Run();
         }
     }
 }

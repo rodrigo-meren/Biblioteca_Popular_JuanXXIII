@@ -1,0 +1,4 @@
+# Ocultar configuraciones con datos sensibles
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json

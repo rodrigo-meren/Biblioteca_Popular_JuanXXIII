@@ -1,6 +1,5 @@
 using Biblioteca_Popular_JuanXXIII.Data;
 using Biblioteca_Popular_JuanXXIII.Models;
-// Faltaban estas tres para el CSV:
 using CsvHelper;
 using CsvHelper.Configuration;
 using MercadoPago.Resource.User;
@@ -12,17 +11,20 @@ using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.Extensions.Configuration;
+
 namespace Biblioteca_Popular_JuanXXIII.Pages.Libros;
 
 [AllowAnonymous]
 public class InicioModel : PageModel
 {
     private readonly ApplicationDbContext _context;
+    private readonly IConfiguration _config;
 
-    public InicioModel(ApplicationDbContext context)
+    public InicioModel(ApplicationDbContext context, IConfiguration config)
     {
         _context = context;
+        _config = config;
     }
 
     [BindProperty(SupportsGet = true)]
@@ -58,7 +60,7 @@ public class InicioModel : PageModel
         return RedirectToPage("./Inicio");
     }
 
-    // --- 2. MÉTODO PRINCIPAL (ON GET) UNIFICADO ---
+  
     public async Task OnGetAsync()
     {
         // A. Consultamos todos los géneros únicos que existen para llenar el DDL
@@ -111,7 +113,7 @@ public class InicioModel : PageModel
     }
 
 
-    // --- 3. MÉTODO PARA IMPORTAR EL CSV (Faltaba) ---
+    // --- 3. MÉTODO PARA IMPORTAR EL CSV -
     public async Task<IActionResult> OnPostImportarAsync(IFormFile archivoCsv)
     {
         if (archivoCsv == null || archivoCsv.Length == 0) return RedirectToPage();
@@ -172,7 +174,8 @@ public class InicioModel : PageModel
 
         if (!librosFaltantes.Any()) return RedirectToPage();
 
-        string apiKey = "AIzaSyCeel9dCx0FA-VNewgi2ojNXNqtinW_pYo"; // Tu clave está perfecta
+        string apiKey = _config["ApiKeys:GoogleBooks"];
+
         using var httpClient = new HttpClient();
 
         foreach (var libro in librosFaltantes)
