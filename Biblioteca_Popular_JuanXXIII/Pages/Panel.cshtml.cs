@@ -33,7 +33,7 @@ public class PanelModel : PageModel
         {
             return RedirectToPage("/MiPerfil/Inicio");
         }
-        TotalSocios = await _context.Socios.CountAsync();
+        TotalSocios = await _context.Socios.CountAsync(s => s.Activo == true);
         TotalLibros = await _context.Libros.CountAsync();
 
         PrestamosActivos = await _context.Prestamos
