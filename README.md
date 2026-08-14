@@ -1,295 +1,168 @@
+# 📚 Biblioteca Popular Juan XXIII — Sistema de Gestión
 
-# 📚 Sistema de Gestión — Biblioteca Popular Juan XXIII
+> 🟢 **En producción:** [bibliojuan23.com.ar](https://bibliojuan23.com.ar/)
 
-![C#](https://img.shields.io/badge/C%23-512BD4?style=for-the-badge&logo=csharp&logoColor=white)
-![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Entity Framework Core](https://img.shields.io/badge/Entity%20Framework%20Core-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
+Sistema web integral desarrollado para la **Biblioteca Popular Juan XXIII**, orientado a centralizar y automatizar la gestión del catálogo bibliográfico, socios, préstamos, reservas y cuotas sociales.
 
-Sistema web integral desarrollado para la **Biblioteca Popular Juan XXIII**, actualmente desplegado en producción.
+Actualmente administra un catálogo de **más de 12.000 libros**.
 
-La plataforma centraliza y automatiza la gestión del catálogo bibliográfico, socios, préstamos, reservas y cuotas sociales, reemplazando procesos manuales y permitiendo administrar un catálogo histórico de **más de 12.000 libros**.
+### 🛠️ Stack principal
+
+`C#` · `.NET 8` · `ASP.NET Core` · `PostgreSQL` · `Entity Framework Core` · `Docker` · `GitHub Actions`
 
 ---
 
-## 🚀 Sobre el proyecto
+## 🎯 Problema y solución
 
-El sistema fue desarrollado como una solución orientada a las necesidades operativas reales de la institución.
+### El problema
+La gestión de la biblioteca requería centralizar información y procesos que involucran un catálogo histórico de más de **12.000 libros**, socios, préstamos, reservas y cuotas sociales. 
 
-El objetivo principal fue centralizar la información y automatizar procesos que anteriormente requerían gestión manual, incorporando reglas de negocio, control de acceso, integración con APIs externas y herramientas para facilitar la administración diaria de la biblioteca.
+La necesidad principal era disponer de una única plataforma que permitiera organizar esta información, reducir tareas manuales y mejorar el seguimiento de las operaciones diarias.
 
-### Estado
+### La solución
+Se desarrolló una **aplicación web integral** para centralizar y automatizar la gestión de la biblioteca. 
 
-🟢 **En producción**
+La plataforma permite administrar el catálogo bibliográfico, gestionar socios, registrar préstamos y devoluciones, controlar reservas y listas de espera, gestionar cuotas y morosidad, e integrar información bibliográfica mediante APIs externas.
 
-### Alcance
-
-- Catálogo de más de **12.000 libros**
-- Gestión de socios
-- Préstamos y devoluciones
-- Reservas y listas de espera
-- Control de morosidad
-- Gestión de cuotas sociales
-- Administración de usuarios y roles
-- Integración con APIs externas de libros
-- Importación masiva mediante CSV
+El sistema se encuentra **actualmente desplegado en producción**.
 
 ---
 
 ## ✨ Funcionalidades principales
 
-### 📖 Catálogo bibliográfico
-
-- ABML completo de libros.
+### 📚 Catálogo bibliográfico
+- Gestión completa de libros y ejemplares.
 - Importación y actualización masiva mediante archivos CSV.
 - Búsqueda y consulta del catálogo.
-- Integración con **Open Library** y **Google Books API**.
-- Obtención automática de información bibliográfica mediante ISBN.
-- Recuperación de títulos, autores, sinopsis y portadas.
-- Traducción y mapeo automático de signaturas topográficas CDU a categorías literarias.
+- Integración con **Google Books API** y **Open Library API** (obtención automática de información, sinopsis y portadas mediante ISBN).
+- Clasificación y mapeo de signaturas topográficas CDU.
 
 ### 👥 Gestión de socios
-
-- Alta, modificación y consulta de socios.
-- Categorización de socios:
-  - Estudiante
-  - Jubilado
-  - Honorario
-  - Vitalicio
-- Ficha unificada del socio.
-- Consulta del estado de cuenta.
-- Historial de préstamos.
+- Alta, modificación y consulta de socios activos e inactivos.
+- Clasificación por categoría (Estudiante, Jubilado, Honorario, Vitalicio).
+- Consulta del estado de cuenta y morosidad.
+- Historial de préstamos y seguimiento de situación del socio.
 
 ### 🔄 Préstamos y reservas
+- Registro de préstamos y devoluciones con control de disponibilidad.
+- Renovación de préstamos y seguimiento de vencimientos.
+- Gestión de reservas y automatización de listas de espera.
 
-- Registro de préstamos y devoluciones.
-- Control de disponibilidad.
-- Gestión de renovaciones.
-- Seguimiento de vencimientos.
-- Cálculo de morosidad.
-- Reservas de ejemplares.
-- Gestión automática de listas de espera.
-
-### 💰 Gestión de cuotas
-
+### 💰 Cuotas y administración
 - Generación masiva de cuotas mensuales.
-- Cálculo de deuda activa.
-- Gestión según categoría de socio.
-- Panel estadístico de recaudación.
-
-### 🔐 Seguridad y autorización
-
-- Autenticación de usuarios.
-- Autorización basada en roles.
-- Roles diferenciados para administración y biblioteca.
-- Restricción de acceso a funcionalidades sensibles.
-- Protección de operaciones administrativas y contables.
-- Validaciones de datos en backend.
-- Control de integridad referencial.
+- Cálculo de deuda activa e histórico de pagos.
+- Paneles y estadísticas de recaudación en el Dashboard.
 
 ---
 
 ## 🏗️ Arquitectura
 
-La aplicación utiliza una **arquitectura en capas (N-Tier)** con separación de responsabilidades.
+La aplicación está desarrollada sobre **ASP.NET Core .NET 8** utilizando **Razor Pages** como modelo de interfaz y **Entity Framework Core** como capa de persistencia. La solución separa la presentación, el acceso a datos, los modelos de dominio y los mecanismos de autenticación/autorización.
+
+### Arquitectura general
 
 ```text
-┌──────────────────────────────────────┐
-│           Presentation               │
-│      ASP.NET Core / Razor Pages      │
-└──────────────────┬───────────────────┘
-                   │
-┌──────────────────▼───────────────────┐
-│         Application / Business       │
-│          Reglas de negocio           │
-└──────────────────┬───────────────────┘
-                   │
-┌──────────────────▼───────────────────┐
-│          Data Access / Infra         │
-│       Entity Framework Core          │
-└──────────────────┬───────────────────┘
-                   │
-┌──────────────────▼───────────────────┐
-│             PostgreSQL               │
-└──────────────────────────────────────┘
-Principios y patrones utilizados
-Arquitectura N-Tier
-Inyección de Dependencias
-Repository Pattern
-Entity Framework Core
-Code First
-Separación de responsabilidades
-Validaciones en backend
-Manejo transaccional
-🛠️ Stack tecnológico
-Backend
-C#
-ASP.NET Core
-Razor Pages
-Entity Framework Core
-Base de datos
-PostgreSQL
-Entity Framework Core Code First
-Frontend
-HTML5
-CSS3
-JavaScript
-AJAX / Fetch API
-Bootstrap 5
-Integraciones
-Google Books API
-Open Library API
-DevOps
-Docker
-GitHub Actions
-CI/CD
-🔄 Flujo de integración de libros
+┌────────────────────────────────────────────┐
+│                ASP.NET Core                │
+│                   .NET 8                   │
+├────────────────────────────────────────────┤
+│                                            │
+│             Razor Pages / Areas            │
+│         Interfaz y lógica de página        │
+│                                            │
+├──────────────────────┬─────────────────────┤
+│                      │                     │
+│      ASP.NET Core    │     Application     │
+│        Identity      │    Data / Domain    │
+│                      │                     │
+│  • Autenticación     │  • Models           │
+│  • Roles             │  • ApplicationDb    │
+│  • Autorización      │    Context          │
+│                      │  • Migraciones      │
+├──────────────────────┴─────────────────────┤
+│            Entity Framework Core           │
+│                   Npgsql                   │
+├────────────────────────────────────────────┤
+│                 PostgreSQL                 │
+└────────────────────────────────────────────┘
 
-Una de las funcionalidades principales del sistema es la incorporación y actualización de información bibliográfica.
+```
+### Organización del proyecto
+```text
+Biblioteca_Popular_JuanXXIII/
+│
+├── Areas/
+│   └── Identity/
+│       └── Autenticación y gestión de identidad
+│
+├── Data/
+│   └── ApplicationDbContext
+│
+├── Migrations/
+│   └── Migraciones de Entity Framework Core
+│
+├── Models/
+│   └── Entidades del dominio
+│
+├── Pages/
+│   └── Razor Pages de la aplicación
+│
+├── Program.cs
+│   └── Configuración y composición de la aplicación
+│
+├── Dockerfile
+│   └── Contenerización de la aplicación
+│
+└── deploy.yml
+    └── Automatización del despliegue
+```
+### 💾 Persistencia
+ApplicationDbContext utiliza Entity Framework Core y hereda de IdentityDbContext, permitiendo centralizar en el mismo contexto tanto las entidades de negocio como las estructuras necesarias para Identity.
 
-ISBN
- │
- ▼
-Google Books API / Open Library API
- │
- ▼
-Obtención de metadatos
- │
- ├── Título
- ├── Autor
- ├── Sinopsis
- ├── Portada
- └── Información bibliográfica
- │
- ▼
-Procesamiento y validación
- │
- ▼
-PostgreSQL
+Principales entidades gestionadas:
 
-Esto permite enriquecer el catálogo existente y reducir la carga manual de información.
+Socio
 
-📦 Importación masiva
+Libro
 
-El sistema incorpora herramientas para procesar grandes volúmenes de información mediante archivos CSV.
+Prestamo
 
-El flujo general es:
+Reserva
 
-Archivo CSV
-     ↓
-Lectura y validación
-     ↓
-Procesamiento
-     ↓
-Reglas de negocio
-     ↓
-Entity Framework Core
-     ↓
-PostgreSQL
+Cuota
 
-Esta funcionalidad fue especialmente importante para trabajar con el catálogo histórico de más de 12.000 libros.
+Recordatorio
 
-🐳 Docker
+La persistencia se realiza sobre un motor PostgreSQL mediante el proveedor Npgsql.EntityFrameworkCore.PostgreSQL.
 
-La aplicación puede ejecutarse mediante contenedores Docker, facilitando la configuración y consistencia entre entornos.
+### 🔐 Autenticación y seguridad
+La aplicación utiliza ASP.NET Core Identity para gestionar la autenticación y el control de acceso basado en roles (RBAC). El pipeline de la aplicación evalúa estos permisos de forma estricta antes de renderizar las vistas o procesar operaciones en la base de datos.
 
-docker build -t biblioteca-popular .
+Roles implementados:
 
-La configuración sensible no se incluye en el repositorio.
+Administrador: Acceso total al sistema, gestión de usuarios y configuraciones críticas.
 
-Las claves de API y cadenas de conexión deben configurarse mediante variables/configuración del entorno correspondiente.
+Bibliotecario: Gestión del catálogo, préstamos, reservas y ABM de socios.
 
-⚙️ Ejecución local
-Requisitos
-.NET SDK
-PostgreSQL
-Docker (opcional)
-Git
-Clonar el repositorio
-git clone https://github.com/rodrigo-meren/Biblioteca_Popular_JuanXXIII.git
+Socio: Acceso de solo lectura a su historial de préstamos, estado de deuda y catálogo.
 
-cd Biblioteca_Popular_JuanXXIII
-Configuración
+Se implementaron prácticas de seguridad para evitar la exposición de datos sensibles, aislando credenciales, tokens de APIs externas y cadenas de conexión fuera del control de versiones mediante variables de entorno (appsettings.json en desarrollo).
 
-Crear la configuración local a partir de la plantilla proporcionada por el proyecto y configurar:
+### 🚀 Migraciones y despliegue
+El sistema cuenta con un flujo de despliegue automatizado y contenerizado:
 
-Cadena de conexión a PostgreSQL
-Google Books API Key
-Open Library configuration
+Contenerización (Docker): La aplicación y el motor de base de datos están orquestados mediante docker-compose, garantizando la paridad entre el entorno de desarrollo y producción.
 
-⚠️ No utilizar credenciales reales dentro del repositorio.
+CI/CD (GitHub Actions): Se configuró un pipeline en deploy.yml que intercepta los cambios en la rama principal, construye la imagen y despliega automáticamente la nueva versión en el servidor.
 
-Migraciones
-dotnet ef database update
-Ejecutar
-dotnet run
+Hosting en VPS: El sistema se ejecuta en un servidor en la nube (Cloud Server) operando sobre Linux.
 
-La aplicación quedará disponible en el endpoint local configurado.
+Gestión de Entorno: Las credenciales de base de datos y la creación segura del usuario administrador inicial se inyectan directamente al contenedor de producción a través de variables de entorno protegidas, evitando credenciales hardcodeadas.
 
-🔒 Seguridad
+Migraciones Automáticas: Entity Framework Core aplica las migraciones estructurales (dbContext.Database.MigrateAsync()) durante la inicialización del contenedor, asegurando que la base de datos en producción siempre coincida con el modelo de código desplegado.
+Las migraciones de Entity Framework Core forman parte del repositorio y
+la aplicación ejecuta la migración de la base de datos durante el proceso
+de inicialización.
 
-El proyecto implementa diferentes mecanismos para proteger la información y controlar el acceso:
-
-Configuración sensible fuera del código fuente.
-Uso de IConfiguration.
-.gitignore para archivos de configuración locales.
-Variables de entorno para secretos.
-Autorización basada en roles.
-Validaciones de entrada.
-Integridad referencial mediante Entity Framework Core.
-Control de operaciones sensibles.
-
-Las credenciales utilizadas por el entorno de producción no forman parte del repositorio.
-
-🚀 CI/CD
-
-El proyecto utiliza GitHub Actions para automatizar tareas relacionadas con integración y despliegue.
-
-El objetivo es reducir tareas manuales y mantener un flujo reproducible para la publicación de nuevas versiones.
-
-Git Push
-   ↓
-GitHub Actions
-   ↓
-Build
-   ↓
-Validaciones
-   ↓
-Docker
-   ↓
-Deploy
-📸 Capturas
-Dashboard
-<img width="1872" height="964" alt="image" src="https://github.com/user-attachments/assets/8f455f7c-0f9a-4274-a4ee-823a59e14d0d" />
-
-Gestión del catálogo
-   <img width="1872" height="964" alt="image" src="https://github.com/user-attachments/assets/1d4c3929-c0c7-4052-8450-862206de0634" />
-
-Gestión de socios / préstamos
-<img width="1877" height="967" alt="image" src="https://github.com/user-attachments/assets/1b1bc576-982e-4c16-af83-44703a32f68a" />
-
-🎯 Resultados
-
-El sistema permite centralizar en una única plataforma:
-
-Más de 12.000 registros bibliográficos.
-Información de socios.
-Historial de préstamos.
-Reservas.
-Cuotas sociales.
-Control de morosidad.
-Información bibliográfica proveniente de APIs externas.
-
-La aplicación se encuentra actualmente en producción.
-
-👨‍💻 Autor
-
-Rodrigo Meren
-
-Junior Backend .NET Developer
-
-Tecnologías principales:
-
-C# · .NET · ASP.NET Core · PostgreSQL · Entity Framework Core · Docker · GitHub Actions
+La aplicación también incluye configuración para ejecución mediante
+Docker y un flujo de despliegue automatizado mediante deploy.yml.
