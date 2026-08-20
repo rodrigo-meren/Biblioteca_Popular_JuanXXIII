@@ -63,39 +63,59 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Cuotas
         // Mantenemos el método para generar el lote masivo
         public async Task<IActionResult> OnPostGenerarLoteAsync()
         {
-            string mesActual = DateTime.Now.ToString("MMMM yyyy", new CultureInfo("es-AR"));
             decimal montoFijo = 3000.00m;
+            var fechaActual = DateTime.Now;
 
-            var sociesActivos = await _context.Socios.ToListAsync();
+            // Traemos solo a los socios activos
+            var sociesActivos = await _context.Socios
+                .Where(s => s.Activo == true)
+                .ToListAsync();
 
             foreach (var socio in sociesActivos)
             {
-                bool yaTieneCuota = await _context.Cuotas
-                    .AnyAsync(c => c.SocioId == socio.Id && c.MesCorrespondiente == mesActual);
+                // Si no pagan cuota, los saltamos directamente
+                if (socio.Categoria == "Honorario" || socio.Categoria == "Vitalicio")
+                    continue;
 
-                if (!yaTieneCuota)
+                // Tomamos la fecha de vencimiento del socio. 
+                // Si por alguna razón está vacía (null), usamos el día 10 del mes actual para que no explote.
+                DateTime fechaIteracion = socio.FechaVencimiento ?? new DateTime(fechaActual.Year, fechaActual.Month, 10);
+
+                // BUCLE: Mientras el mes y año evaluado sea menor o igual al mes y año actual
+                // (Convertimos a día 1 para comparar solo meses y años enteros, sin importar el día)
+                while (new DateTime(fechaIteracion.Year, fechaIteracion.Month, 1) <= new DateTime(fechaActual.Year, fechaActual.Month, 1))
                 {
-                    if (!(socio.Categoria == "Honorario" || socio.Categoria == "Vitalicio"))
+                    // Nombre del mes para esta vuelta (ej: "junio 2026", "julio 2026")
+                    string mesCorrespondiente = fechaIteracion.ToString("MMMM yyyy", new CultureInfo("es-AR"));
+
+                    // Nos fijamos si YA le cobramos este mes específico a este socio
+                    bool yaTieneCuota = await _context.Cuotas
+                        .AnyAsync(c => c.SocioId == socio.Id && c.MesCorrespondiente == mesCorrespondiente);
+
+                    if (!yaTieneCuota)
                     {
                         var nuevaCuota = new Cuota
                         {
-
                             SocioId = socio.Id,
                             Monto = montoFijo,
-                            MesCorrespondiente = mesActual,
-                            FechaVencimiento = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 10),
-                            Estado = "Pendiente"
-
+                            MesCorrespondiente = mesCorrespondiente,
+                            FechaVencimiento = fechaIteracion,
+                            // Si la fecha de la cuota ya pasó, la creamos directamente como "Vencida"
+                            Estado = fechaIteracion.Date < fechaActual.Date ? "Vencida" : "Pendiente"
                         };
 
                         _context.Cuotas.Add(nuevaCuota);
                     }
+
+                    // Sumamos un mes a la fecha para la próxima vuelta del bucle
+                    fechaIteracion = fechaIteracion.AddMonths(1);
                 }
             }
 
             await _context.SaveChangesAsync();
             return RedirectToPage("./Inicio");
         }
+
         public async Task<IActionResult> OnPostResetearCeroAsync()
         {
             // Buscamos todas las cuotas que se hayan generado y estén pendientes o vencidas
