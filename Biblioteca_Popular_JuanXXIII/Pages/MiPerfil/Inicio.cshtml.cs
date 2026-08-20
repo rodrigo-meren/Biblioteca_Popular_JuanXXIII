@@ -32,21 +32,11 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.MiPerfil
 
         public async Task<IActionResult> OnGetAsync(string pago, int meses = 0)
         {
-            // 1. Obtenemos el ID del usuario logueado en la web
+            // 1. Obtenemos el ID del usuario
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // 2. Buscamos al socio
             SocioActual = await _context.Socios.FirstOrDefaultAsync(s => s.IdentityUserId == userId);
 
-            // 3. TRAMPA DE DEBUG: En vez de desloguearte, que te imprima en pantalla el error exacto
-            if (SocioActual == null)
-            {
-                return Content($"ATENCIÓN: Tu sesión funciona y tu ID de usuario web es: '{userId}'. " +
-                               $"Sin embargo, fuimos a la tabla 'Socios' y NO encontramos a ningún socio que tenga este ID exacto en su columna 'IdentityUserId'. " +
-                               $"Por favor, abrí tu base de datos y verificá que esa columna no esté vacía.");
-            }
-
-            // ... (el resto del código de MercadoPago y las listas queda igual)
+            if (SocioActual == null) return RedirectToPage("/Account/Logout", new { area = "Identity" });
 
             // ==========================================
             // LÓGICA DE INTERCEPCIÓN DE MERCADO PAGO
