@@ -66,29 +66,30 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Cuotas
             decimal montoFijo = 3000.00m;
             var fechaActual = DateTime.Now;
 
-            // Traemos solo a los socios activos
+            // FRENO DE SEGURIDAD: Límite de 12 meses para atrás
+            var limiteHistorico = fechaActual.AddMonths(-12);
+
             var sociesActivos = await _context.Socios
                 .Where(s => s.Activo == true)
                 .ToListAsync();
 
             foreach (var socio in sociesActivos)
             {
-                // Si no pagan cuota, los saltamos directamente
                 if (socio.Categoria == "Honorario" || socio.Categoria == "Vitalicio")
                     continue;
 
-                // Tomamos la fecha de vencimiento del socio. 
-                // Si por alguna razón está vacía (null), usamos el día 10 del mes actual para que no explote.
                 DateTime fechaIteracion = socio.FechaVencimiento ?? new DateTime(fechaActual.Year, fechaActual.Month, 10);
 
-                // BUCLE: Mientras el mes y año evaluado sea menor o igual al mes y año actual
-                // (Convertimos a día 1 para comparar solo meses y años enteros, sin importar el día)
+                // Si la fecha es de hace 10 años, la traemos al límite seguro
+                if (fechaIteracion < limiteHistorico)
+                {
+                    fechaIteracion = new DateTime(limiteHistorico.Year, limiteHistorico.Month, 10);
+                }
+
                 while (new DateTime(fechaIteracion.Year, fechaIteracion.Month, 1) <= new DateTime(fechaActual.Year, fechaActual.Month, 1))
                 {
-                    // Nombre del mes para esta vuelta (ej: "junio 2026", "julio 2026")
                     string mesCorrespondiente = fechaIteracion.ToString("MMMM yyyy", new CultureInfo("es-AR"));
 
-                    // Nos fijamos si YA le cobramos este mes específico a este socio
                     bool yaTieneCuota = await _context.Cuotas
                         .AnyAsync(c => c.SocioId == socio.Id && c.MesCorrespondiente == mesCorrespondiente);
 
@@ -100,19 +101,19 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Cuotas
                             Monto = montoFijo,
                             MesCorrespondiente = mesCorrespondiente,
                             FechaVencimiento = fechaIteracion,
-                            // Si la fecha de la cuota ya pasó, la creamos directamente como "Vencida"
                             Estado = fechaIteracion.Date < fechaActual.Date ? "Vencida" : "Pendiente"
                         };
 
                         _context.Cuotas.Add(nuevaCuota);
                     }
 
-                    // Sumamos un mes a la fecha para la próxima vuelta del bucle
                     fechaIteracion = fechaIteracion.AddMonths(1);
                 }
+
+                // GUARDAMOS ADENTRO DEL FOREACH: Libera la RAM socio por socio
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToPage("./Inicio");
         }
 
