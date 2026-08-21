@@ -92,4 +92,44 @@ public class DetallesModel : PageModel
         // Recargamos la ficha del socie
         return RedirectToPage(new { id = socioId });
     }
+    // ==========================================
+    // REGISTRO DE PAGO DE CUOTA EN EFECTIVO
+    // ==========================================
+    public async Task<IActionResult> OnPostRegistrarPagoAsync(int cuotaId, int socioId)
+    {
+        // 1. Buscamos la cuota que el bibliotecario quiere cobrar
+        var cuota = await _context.Cuotas.FirstOrDefaultAsync(c => c.Id == cuotaId);
+
+        if (cuota != null && cuota.Estado != "Pagada")
+        {
+            // 2. Marcamos la cuota como pagada y le ponemos la fecha de hoy
+            cuota.Estado = "Pagada";
+            cuota.FechaPago = DateTime.Now;
+
+            // 3. Buscamos al socio para actualizarle el semáforo de estado
+            var socio = await _context.Socios.FirstOrDefaultAsync(s => s.Id == socioId);
+
+            if (socio != null)
+            {
+                if (socio.FechaVencimiento.HasValue)
+                {
+                    // Le sumamos un mes a su vencimiento actual
+                    socio.FechaVencimiento = socio.FechaVencimiento.Value.AddMonths(1);
+                }
+                else
+                {
+                    // Si por algún error no tenía fecha, lo acomodamos para el mes que viene
+                    socio.FechaVencimiento = DateTime.Now.AddMonths(1);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Opcional: Mandamos un cartelito verde de éxito a la vista
+            TempData["MensajeExito"] = $"El pago de {cuota.MesCorrespondiente} fue registrado con éxito.";
+        }
+
+        // Recargamos la ficha del socie para que se actualicen las tablas y el semáforo
+        return RedirectToPage(new { id = socioId });
+    }
 }
