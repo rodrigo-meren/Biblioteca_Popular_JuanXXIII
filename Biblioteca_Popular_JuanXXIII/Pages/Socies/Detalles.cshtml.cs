@@ -132,4 +132,55 @@ public class DetallesModel : PageModel
         // Recargamos la ficha del socie para que se actualicen las tablas y el semáforo
         return RedirectToPage(new { id = socioId });
     }
+    // ==========================================
+    // GENERAR CUOTA ADELANTADA MANUALMENTE
+    // ==========================================
+    public async Task<IActionResult> OnPostAdelantarMesAsync(int socioId)
+    {
+        var socio = await _context.Socios.FirstOrDefaultAsync(s => s.Id == socioId);
+        if (socio == null) return NotFound();
+
+        // Buscamos cuál es la cuota más lejana en el tiempo que ya tiene generada
+        var ultimaCuota = await _context.Cuotas
+            .Where(c => c.SocioId == socioId)
+            .OrderByDescending(c => c.FechaVencimiento)
+            .FirstOrDefaultAsync();
+
+        DateTime fechaBase;
+
+        if (ultimaCuota != null)
+        {
+            // Si ya tiene cuotas, la nueva será para el mes siguiente a la última
+            fechaBase = ultimaCuota.FechaVencimiento.AddMonths(1);
+        }
+        else if (socio.FechaVencimiento.HasValue)
+        {
+            // Si no tiene cuotas pero tiene fecha de vencimiento, usamos esa
+            fechaBase = socio.FechaVencimiento.Value;
+        }
+        else
+        {
+            // Si es un socio nuevo y no tiene nada, usamos el día 10 del mes actual
+            fechaBase = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 10);
+        }
+
+        // Armamos el nombre del mes (ej: "septiembre 2026")
+        string mesCorrespondiente = fechaBase.ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-AR"));
+
+        var nuevaCuota = new Cuota
+        {
+            SocioId = socio.Id,
+            Monto = 3000.00m, // Ajustá este valor al precio real de la cuota
+            MesCorrespondiente = mesCorrespondiente,
+            FechaVencimiento = fechaBase,
+            Estado = "Pendiente"
+        };
+
+        _context.Cuotas.Add(nuevaCuota);
+        await _context.SaveChangesAsync();
+
+        TempData["MensajeExito"] = $"Se generó correctamente la cuota adelantada de {mesCorrespondiente}.";
+
+        return RedirectToPage(new { id = socioId });
+    }
 }
