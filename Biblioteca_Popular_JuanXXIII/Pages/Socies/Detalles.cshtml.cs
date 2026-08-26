@@ -3,20 +3,24 @@ using Biblioteca_Popular_JuanXXIII.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Biblioteca_Popular_JuanXXIII.Pages.Socies;
 
 public class DetallesModel : PageModel
 {
     private readonly ApplicationDbContext _context;
-    public DetallesModel(ApplicationDbContext context)
+    private readonly UserManager<IdentityUser> _userManager;
+    public DetallesModel(ApplicationDbContext context, UserManager<IdentityUser> userManager)
     {
         _context = context;
+        _userManager = userManager;
     }
 
     public Socio Socio { get; set; } = default!;
     public IList<Cuota> Cuotas { get; set; } = default!;
     public IList<Prestamo> Prestamos { get; set; } = default!;
+    public bool EsAdmin { get; set; } = false;
 
     // Variables nuevas para paginar
     public int PaginaActualPrestamos { get; set; } = 1;
@@ -30,6 +34,15 @@ public class DetallesModel : PageModel
 
         Socio = await _context.Socios.FirstOrDefaultAsync(m => m.Id == id);
         if (Socio == null) return NotFound();
+        // Verificamos si este socio ya es administrador
+        if (!string.IsNullOrEmpty(Socio.IdentityUserId))
+        {
+            var identityUser = await _userManager.FindByIdAsync(Socio.IdentityUserId);
+            if (identityUser != null)
+            {
+                EsAdmin = await _userManager.IsInRoleAsync(identityUser, "Administrador");
+            }
+        }
 
         // Traemos TODAS las cuotas (suelen ser pocas, no hace falta paginar)
         Cuotas = await _context.Cuotas
@@ -180,6 +193,43 @@ public class DetallesModel : PageModel
         await _context.SaveChangesAsync();
 
         TempData["MensajeExito"] = $"Se generó correctamente la cuota adelantada de {mesCorrespondiente}.";
+
+        return RedirectToPage(new { id = socioId });
+    }
+    public async Task<IActionResult> OnPostAlternarRolAdminAsync(int socioId)
+    {
+        // 1. CANDADO DE SEGURIDAD (Root)
+        if (User.Identity == null || User.Identity.Name != "92659857")
+        {
+            TempData["MensajeError"] = "Acceso denegado. No tenés permisos de superusuario para realizar esta acción.";
+            return RedirectToPage(new { id = socioId });
+        }
+
+        // 2. Buscamos al socio al que le vamos a dar/quitar el rol...
+        var socio = await _context.Socios.FindAsync(socioId);
+
+        // ... (el resto del código sigue exactamente igual que antes)
+        if (socio == null || string.IsNullOrEmpty(socio.IdentityUserId))
+        {
+            TempData["MensajeError"] = "Este socio no tiene un usuario web vinculado.";
+            return RedirectToPage(new { id = socioId });
+        }
+
+        var identityUser = await _userManager.FindByIdAsync(socio.IdentityUserId);
+        if (identityUser == null) return NotFound();
+
+        bool esAdmin = await _userManager.IsInRoleAsync(identityUser, "Administrador");
+
+        if (esAdmin)
+        {
+            await _userManager.RemoveFromRoleAsync(identityUser, "Administrador");
+            TempData["MensajeExito"] = $"Se quitaron los permisos de administrador a {socio.Nombre}.";
+        }
+        else
+        {
+            await _userManager.AddToRoleAsync(identityUser, "Administrador");
+            TempData["MensajeExito"] = $"Se otorgaron permisos de administrador a {socio.Nombre}.";
+        }
 
         return RedirectToPage(new { id = socioId });
     }

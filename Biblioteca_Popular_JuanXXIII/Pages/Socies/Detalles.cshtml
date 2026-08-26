@@ -293,13 +293,23 @@
                 }
             </div>
         </div> <!-- Acá termina el card principal del historial -->
-            </div>
-
-            <!-- Botones actualizados y alineados a la derecha -->
-            <div class="card-footer bg-white border-0 text-end p-4 border-top mt-2">
-                <a asp-page="./Editar" asp-route-id="@Model.Socio.Id" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Editar Ficha</a>
-                <a asp-page="./Inicio" class="btn btn-outline-secondary ms-2"><i class="bi bi-arrow-left"></i> Volver al Padrón</a>
-            </div>
-        </div>
     </div>
+
+    <!-- Botones actualizados y alineados a la derecha -->
+    <div class="card-footer bg-white border-0 text-end p-4 border-top mt-2">
+        <a asp-page="./Editar" asp-route-id="@Model.Socio.Id" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Editar Ficha</a>
+        @if (User.Identity != null && User.Identity.Name == "92659857")
+        {
+            <form method="post" asp-page-handler="AlternarRolAdmin" class="d-inline-block m-0">
+                <input type="hidden" name="socioId" value="@Model.Socio.Id" />
+                <button type="submit" class="btn @(Model.EsAdmin ? "btn-danger" : "btn-warning text-dark") shadow-sm" onclick="return confirm('¿Seguro que deseás cambiar los permisos de este usuario?');">
+                    <i class="bi @(Model.EsAdmin ? "bi-shield-slash" : "bi-shield-check")"></i>
+                    @(Model.EsAdmin ? "Quitar Admin" : "Hacer Admin")
+                </button>
+            </form>
+        }
+        <a asp-page="./Inicio" class="btn btn-outline-secondary ms-2"><i class="bi bi-arrow-left"></i> Volver al Padrón</a>
+    </div>
+</div>
+</div>
 </div>
