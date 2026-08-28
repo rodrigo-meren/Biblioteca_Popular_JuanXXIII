@@ -22,6 +22,42 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Auditoria", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Detalles")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("FechaHora")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Modulo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("UsuarioResponsable")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Auditorias");
+                });
+
             modelBuilder.Entity("Biblioteca_Popular_JuanXXIII.Models.Cuota", b =>
                 {
                     b.Property<int>("Id")
@@ -36,10 +72,10 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .HasColumnType("character varying(20)");
 
                     b.Property<DateTime?>("FechaPago")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("FechaVencimiento")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("MesCorrespondiente")
                         .IsRequired()
@@ -138,7 +174,7 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("FechaPublicacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
@@ -162,7 +198,7 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("Resuelto")
                         .HasColumnType("boolean");
@@ -196,7 +232,7 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .HasColumnType("character varying(1000)");
 
                     b.Property<DateTime>("FechaPublicacion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("LibroId")
                         .HasColumnType("integer");
@@ -226,10 +262,10 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("FechaLimiteRetiro")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("FechaSolicitud")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("LibroId")
                         .HasColumnType("integer");
@@ -263,13 +299,13 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<DateTime?>("FechaDevolucion")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("FechaPrestamo")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("FechaVencimiento")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("LibroId")
                         .HasColumnType("integer");
@@ -324,13 +360,13 @@ namespace Biblioteca_Popular_JuanXXIII.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("FechaAlta")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("FechaNacimiento")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("FechaVencimiento")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Genero")
                         .IsRequired()

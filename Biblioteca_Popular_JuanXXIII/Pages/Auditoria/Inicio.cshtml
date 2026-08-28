@@ -1,0 +1,41 @@
+﻿@page
+@model Biblioteca_Popular_JuanXXIII.Pages.Auditoria.InicioModel
+@{
+    ViewData["Title"] = "Auditoría del Sistema";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="text-institucional-rojo"><i class="bi bi-shield-lock-fill me-2"></i>Auditoría</h1>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover table-striped align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-4">Fecha y Hora</th>
+                    <th>Usuario</th>
+                    <th>Módulo</th>
+                    <th>Acción</th>
+                    <th class="pe-4">Detalle</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Registros)
+                {
+                    <tr>
+                        <td class="ps-4 text-muted">@item.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="fw-bold">@item.UsuarioResponsable</td>
+                        <td><span class="badge bg-secondary">@item.Modulo</span></td>
+                        <td>
+                            <span class="badge @(item.Accion.Contains("Baja") || item.Accion.Contains("Eliminar") ? "bg-danger" : "bg-primary")">
+                                @item.Accion
+                            </span>
+                        </td>
+                        <td class="pe-4">@item.Detalles</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

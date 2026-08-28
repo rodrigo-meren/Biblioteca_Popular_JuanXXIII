@@ -20,5 +20,6 @@ namespace Biblioteca_Popular_JuanXXIII.Data
         public DbSet<Recordatorio> Recordatorios { get; set; }
         public DbSet<Reserva> Reservas { get; set; }
         public DbSet<Noticia> Noticias { get; set; }
+        public DbSet<Auditoria> Auditorias { get; set; }
     }
 }

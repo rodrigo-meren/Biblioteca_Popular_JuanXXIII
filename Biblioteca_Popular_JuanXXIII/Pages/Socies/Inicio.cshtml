@@ -100,9 +100,19 @@
                             }
                         </td>
                         <td class="text-end pe-4">
-                            <!-- EVALUAMOS SI ESTÁ ACTIVO O NO PARA MOSTRAR LOS BOTONES -->
                             @if (item.Activo)
                             {
+                                <!-- BOTÓN WHATSAPP (Solo si tiene teléfono) -->
+                                @if (!string.IsNullOrEmpty(item.Telefono))
+                                {
+                                    // Limpiamos espacios y guiones para la API de WhatsApp
+                                    string celLimpio = item.Telefono.Replace(" ", "").Replace("-", "").Replace("+", "");
+
+                                    <a href="https://wa.me/@celLimpio" target="_blank" class="btn btn-sm btn-success text-white shadow-sm me-1" title="WhatsApp al @item.Telefono">
+                                        <i class="bi bi-whatsapp"></i>
+                                    </a>
+                                }
+
                                 <a asp-page="./Detalles" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white shadow-sm" title="Ver detalles">
                                     <i class="bi bi-eye"></i>
                                 </a>
