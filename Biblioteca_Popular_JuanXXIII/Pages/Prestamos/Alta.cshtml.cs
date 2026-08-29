@@ -117,6 +117,14 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                     reserva.Estado = "Completada";
                 }
             }
+            var registroAuditoria = new Models.Auditoria
+            {
+                UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+                Modulo = "Prestamos",
+                Accion = "Alta de Prestamo",
+                Detalles = $"Se dio de alta el préstamo: {Prestamo.Libro.Titulo} ({Prestamo.Libro.CodigoInventario})."
+            };
+            _context.Auditorias.Add(registroAuditoria);
 
             await _context.SaveChangesAsync();
 

@@ -98,6 +98,14 @@ public class DetallesModel : PageModel
             }
 
             await _context.SaveChangesAsync();
+            var registroAuditoria = new Models.Auditoria
+            {
+                UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+                Modulo = "Prestamos",
+                Accion = "Devolución de Préstamo",
+                Detalles = $"Se devolvió el préstamo: {prestamo.Libro.Titulo} ({prestamo.Libro.CodigoInventario })."
+            };
+            _context.Auditorias.Add(registroAuditoria);
 
             TempData["MensajeExito"] = $"El libro '{prestamo.Libro?.Titulo}' fue devuelto al inventario correctamente.";
         }
@@ -137,6 +145,14 @@ public class DetallesModel : PageModel
             }
 
             await _context.SaveChangesAsync();
+            var registroAuditoria = new Models.Auditoria
+            {
+                UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+                Modulo = "Cuotas",
+                Accion = "Alta de Cuota",
+                Detalles = $"Se generó la cuota para el socio: {socio.Nombre} {socio.Apellido} (DNI: {socio.DniCarnet})."
+            };
+            _context.Auditorias.Add(registroAuditoria);
 
             // Opcional: Mandamos un cartelito verde de éxito a la vista
             TempData["MensajeExito"] = $"El pago de {cuota.MesCorrespondiente} fue registrado con éxito.";
@@ -191,6 +207,14 @@ public class DetallesModel : PageModel
 
         _context.Cuotas.Add(nuevaCuota);
         await _context.SaveChangesAsync();
+        var registroAuditoria = new Models.Auditoria
+        {
+            UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+            Modulo = "Cuotas",
+            Accion = "Alta de Cuota",
+            Detalles = $"Se generó la cuota adelantada para el socio: {socio.Nombre} {socio.Apellido} (DNI: {socio.DniCarnet})."
+        };
+        _context.Auditorias.Add(registroAuditoria);
 
         TempData["MensajeExito"] = $"Se generó correctamente la cuota adelantada de {mesCorrespondiente}.";
 

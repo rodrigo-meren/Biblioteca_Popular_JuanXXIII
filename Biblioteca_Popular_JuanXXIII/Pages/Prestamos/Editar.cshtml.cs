@@ -43,6 +43,14 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                 CargarListasDesplegables();
                 return Page();
             }
+            var registroAuditoria = new Models.Auditoria
+            {
+                UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+                Modulo = "Prestamos",
+                Accion = "Edición de Préstamo",
+                Detalles = $"Se editó el préstamo: {Prestamo.Libro.Titulo} ({Prestamo.Libro.CodigoInventario})."
+            };
+            _context.Auditorias.Add(registroAuditoria);
 
             // Le decimos a Entity Framework que actualice todo el registro modificado
             _context.Attach(Prestamo).State = EntityState.Modified;

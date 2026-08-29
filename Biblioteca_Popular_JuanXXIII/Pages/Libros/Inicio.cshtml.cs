@@ -160,6 +160,14 @@ public class InicioModel : PageModel
             _context.Libros.Remove(libro);
             await _context.SaveChangesAsync();
         }
+        var registroAuditoria = new Models.Auditoria
+        {
+            UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+            Modulo = "Libros",
+            Accion = "Baja de Libro",
+            Detalles = $"Se dio de baja el libro: {libro.Titulo} ({libro.CodigoInventario})."
+        };
+        _context.Auditorias.Add(registroAuditoria);
         return RedirectToPage("./Inicio");
     }
 
@@ -294,6 +302,7 @@ public class InicioModel : PageModel
                 }
             }
 
+
             // Si pasó la validación (o si estaba quitando una estrella), invertimos el estado
             libro.EsDestacado = !libro.EsDestacado;
             await _context.SaveChangesAsync();
@@ -307,6 +316,7 @@ public class InicioModel : PageModel
             {
                 TempData["MensajeExito"] = $"El libro '{libro.Titulo}' se quitó de las recomendaciones.";
             }
+
         }
 
         return RedirectToPage();

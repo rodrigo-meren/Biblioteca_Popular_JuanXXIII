@@ -92,10 +92,18 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Prestamos
                 {
                     libro.Disponible = true;
                 }
+                
 
                 await _context.SaveChangesAsync();
             }
-
+            var registroAuditoria = new Models.Auditoria
+            {
+                UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+                Modulo = "Prestamos",
+                Accion = "Devolución de Préstamo",
+                Detalles = $"Se devolvió el préstamo: {prestamo.Libro.Titulo} ({prestamo.Libro.CodigoInventario})."
+            };
+            _context.Auditorias.Add(registroAuditoria);
             return RedirectToPage("./Inicio");
         }
 

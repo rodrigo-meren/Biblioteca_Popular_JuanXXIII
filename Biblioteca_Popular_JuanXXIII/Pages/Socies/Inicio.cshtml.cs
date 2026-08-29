@@ -169,6 +169,14 @@ public class InicioModel : PageModel
             _context.Socios.Remove(socio);
             await _context.SaveChangesAsync();
         }
+        var registroAuditoria = new Models.Auditoria
+        {
+            UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+            Modulo = "Socios",
+            Accion = "Baja de Socio",
+            Detalles = $"Se dio de baja al socio: {socio.Nombre} {socio.Apellido} (DNI: {socio.DniCarnet})."
+        };
+        _context.Auditorias.Add(registroAuditoria);
 
         return RedirectToPage();
     }
@@ -183,6 +191,14 @@ public class InicioModel : PageModel
             socio.Activo = true;
             await _context.SaveChangesAsync();
         }
+        var registroAuditoria = new Models.Auditoria
+        {
+            UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+            Modulo = "Socios",
+            Accion = "Activacíon de Socio",
+            Detalles = $"Se activo al socio: {socio.Nombre} {socio.Apellido} (DNI: {socio.DniCarnet})."
+        };
+        _context.Auditorias.Add(registroAuditoria);
         return RedirectToPage();
     }
 }

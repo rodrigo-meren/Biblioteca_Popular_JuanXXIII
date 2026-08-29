@@ -191,5 +191,13 @@ public class AltaModel : PageModel
             TempData["MensajeError"] = $"La base de datos rechazó al socio. Motivo: {errorReal}";
             return Page();
         }
+        var registroAuditoria = new Models.Auditoria
+        {
+            UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+            Modulo = "Socios",
+            Accion = "Alta de Socio",
+            Detalles = $"Se dio de alta al socio: {Socio.Nombre} {Socio.Apellido} (DNI: {Socio.DniCarnet})."
+        };
+        _context.Auditorias.Add(registroAuditoria);
     }
 }

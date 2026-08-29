@@ -34,8 +34,7 @@ public class EditarModel : PageModel
         return Page();
     }
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see https://aka.ms/RazorPagesCRUD.
+ 
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)
@@ -60,6 +59,14 @@ public class EditarModel : PageModel
                 throw;
             }
         }
+        var registroAuditoria = new Models.Auditoria
+        {
+            UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+            Modulo = "Libros",
+            Accion = "edicion de Libro",
+            Detalles = $"Se editó el libro: {Libro.Titulo} ({Libro.CodigoInventario})."
+        };
+        _context.Auditorias.Add(registroAuditoria);
 
         return RedirectToPage("./Inicio");
     }

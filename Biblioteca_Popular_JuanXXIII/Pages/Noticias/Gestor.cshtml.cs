@@ -45,6 +45,14 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Noticias
 
             _context.Noticias.Add(NuevaNoticia);
             await _context.SaveChangesAsync();
+            var registroAuditoria = new Models.Auditoria
+            {
+                UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+                Modulo = "Noticias",
+                Accion = "Alta de Noticia",
+                Detalles = $"Se dio de alta la noticia: {NuevaNoticia.Titulo}."
+            };
+            _context.Auditorias.Add(registroAuditoria);
 
             TempData["MensajeExito"] = "¡La noticia se publicó correctamente en la portada!";
             return RedirectToPage();
@@ -59,6 +67,14 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Noticias
                 noticia.Activa = !noticia.Activa;
                 await _context.SaveChangesAsync();
             }
+            var registroAuditoria = new Models.Auditoria
+            {
+                UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+                Modulo = "Noticias",
+                Accion = "Alternar Estado de Noticia",
+                Detalles = $"Se alternó el estado de la noticia: {noticia.Titulo}."
+            };
+            _context.Auditorias.Add(registroAuditoria);
 
             return RedirectToPage();
         }
@@ -72,6 +88,14 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Noticias
                 await _context.SaveChangesAsync();
                 TempData["MensajeExito"] = "Noticia eliminada definitivamente.";
             }
+            var registroAuditoria = new Models.Auditoria
+            {
+                UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+                Modulo = "Noticias",
+                Accion = "Eliminación de Noticia",
+                Detalles = $"Se eliminó la noticia: {noticia.Titulo}."  
+            };
+            _context.Auditorias.Add(registroAuditoria);
 
             return RedirectToPage();
         }
