@@ -63,6 +63,7 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Cuotas
         // Mantenemos el método para generar el lote masivo
         public async Task<IActionResult> OnPostGenerarLoteAsync()
         {
+
             decimal montoFijo = 3000.00m;
             var fechaActual = DateTime.Now;
 
@@ -109,10 +110,21 @@ namespace Biblioteca_Popular_JuanXXIII.Pages.Cuotas
 
                     fechaIteracion = fechaIteracion.AddMonths(1);
                 }
+                var registroAuditoria = new Models.Auditoria
+                {
+                    UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+                    Modulo = "Cuotas",
+                    Accion = "generacion de lote",
+                    Detalles = $"Se Genero el lote de cuotas"
+                };
+                _context.Auditorias.Add(registroAuditoria);
+
+                await _context.SaveChangesAsync();
 
                 // GUARDAMOS ADENTRO DEL FOREACH: Libera la RAM socio por socio
                 await _context.SaveChangesAsync();
             }
+
 
             return RedirectToPage("./Inicio");
         }

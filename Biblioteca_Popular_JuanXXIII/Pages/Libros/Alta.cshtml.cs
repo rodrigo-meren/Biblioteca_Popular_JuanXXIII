@@ -156,7 +156,9 @@ public class AltaModel : PageModel
                         }
                     }
                 }
+               
 
+                await _context.SaveChangesAsync();
                 await _context.SaveChangesAsync();
                 TempData["MensajeExito"] = $"¡Importación completada! Se agregaron {librosAgregados} libros nuevos y se actualizaron {librosActualizados} existentes.";
             }
@@ -207,6 +209,14 @@ public class AltaModel : PageModel
             try { await _context.Database.ExecuteSqlRawAsync($"SELECT setval('\"Libros_Id_seq\"', {maxId});"); } catch { }
             try { await _context.Database.ExecuteSqlRawAsync($"SELECT setval('\"Libro_Id_seq\"', {maxId});"); } catch { }
         }
+        var registroAuditoria = new Models.Auditoria
+        {
+            UsuarioResponsable = User.Identity.Name, // Guarda el DNI del admin logueado
+            Modulo = "Libros",
+            Accion = "Alta de Libro",
+            Detalles = $"Se dio de alta el libro: {Libro.Titulo} ({Libro.CodigoInventario})."
+        };
+        _context.Auditorias.Add(registroAuditoria);
 
         // Ya NO calculamos el número acá. Respetamos el que vino del formulario (Libro.CodigoInventario)
         _context.Libros.Add(Libro);

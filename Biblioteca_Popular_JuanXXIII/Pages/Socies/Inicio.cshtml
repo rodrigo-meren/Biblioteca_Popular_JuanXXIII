@@ -107,6 +107,10 @@
                                 {
                                     // Limpiamos espacios y guiones para la API de WhatsApp
                                     string celLimpio = item.Telefono.Replace(" ", "").Replace("-", "").Replace("+", "");
+                                    if (!celLimpio.StartsWith("54"))
+                                    {
+                                        celLimpio = "549" + celLimpio;
+                                    }
 
                                     <a href="https://wa.me/@celLimpio" target="_blank" class="btn btn-sm btn-success text-white shadow-sm me-1" title="WhatsApp al @item.Telefono">
                                         <i class="bi bi-whatsapp"></i>
