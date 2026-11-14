@@ -82,13 +82,15 @@ public class InicioModel : PageModel
             // 1. Pasamos lo que escribió el usuario a minúsculas
             var terminoBusqueda = BuscarTexto.ToLower();
 
-            // 2. Comparamos convirtiendo también los campos de la base a minúsculas
-            //    y agregamos el CodigoInventario a la búsqueda
-            consulta = consulta.Where(l => l.Titulo.ToLower().Contains(terminoBusqueda) ||
-                                           l.Autor.ToLower().Contains(terminoBusqueda) ||
-                                           l.GeneroLiterario.ToLower().Contains(terminoBusqueda) ||
-                                           l.ISBN.ToLower().Contains(terminoBusqueda) ||
-                                           l.CodigoInventario.ToLower().Contains(terminoBusqueda));
+            string terminoNormalizado = terminoBusqueda.ToLower().Trim();
+
+            consulta = consulta.Where(l =>
+                (l.Titulo != null && EF.Functions.Unaccent(l.Titulo.ToLower()).Contains(terminoNormalizado)) ||
+                (l.Autor != null && EF.Functions.Unaccent(l.Autor.ToLower()).Contains(terminoNormalizado)) ||
+                (l.GeneroLiterario != null && EF.Functions.Unaccent(l.GeneroLiterario.ToLower()).Contains(terminoNormalizado)) ||
+                (l.ISBN != null && EF.Functions.Unaccent(l.ISBN.ToLower()).Contains(terminoNormalizado)) ||
+                (l.CodigoInventario != null && EF.Functions.Unaccent(l.CodigoInventario.ToLower()).Contains(terminoNormalizado))
+            );
         }
         // D. Filtro 2: Menú desplegable de Género
         if (!string.IsNullOrEmpty(FiltroGenero))
